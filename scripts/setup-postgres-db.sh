@@ -34,10 +34,6 @@ createdb "${DB}"
 # Initialize schema
 psql -d "${DB}" -f "${SCHEMA_SQL_FILE}"
 
-pwd
-pwd
-pwd
-
 # Load data
 psql -d "${DB}" -f "${LOAD_DATA_SQL_FILE}"
 

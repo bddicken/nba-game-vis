@@ -22,8 +22,8 @@ echo "${ALL_DOWNLOAD_URLS}"
 echo "----"
 
 # Clean up 
-rm downloads.php
-rm -r download
+rm -f downloads.php
+rm -rf download
 
 # change directories
 mkdir ./download

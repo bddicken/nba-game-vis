@@ -77,14 +77,14 @@ def loadData():
                 specificEventType = find_between(event, playerName, "Shot")
 
         if eventType:
-            print                       \
-                    gameID + "\t" +     \
-                    seqID + "\t" +      \
-                    season + "\t" +     \
-                    time + "\t" +       \
-                    teamID + "\t" +     \
-                    playerName + "\t" + \
-                    eventType + "\t" +  \
+            print                        \
+                    gameID      + "\t" + \
+                    seqID       + "\t" + \
+                    season      + "\t" + \
+                    time        + "\t" + \
+                    teamID      + "\t" + \
+                    playerName  + "\t" + \
+                    eventType   + "\t" + \
                     specificEventType
 
 def main():

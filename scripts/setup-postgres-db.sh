@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 #
 # Script to setup database
@@ -7,6 +7,9 @@
 # We want the script to fail on any error
 #set -o errexit
 set -o nounset
+
+# get data load file from command line
+DATA_FILE="${1}"
 
 # Some variables
 SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
@@ -35,7 +38,16 @@ createdb "${DB}"
 psql -d "${DB}" -f "${SCHEMA_SQL_FILE}"
 
 # Load data
-psql -d "${DB}" -f "${LOAD_DATA_SQL_FILE}"
+echo "${DATA_FILE}" 
+echo "${SCRIPT_DIR}/resources/load_data.sql"
+
+TEMP_LOAD_FILE=$(mktemp)
+cp "${LOAD_DATA_SQL_FILE}" ${TEMP_LOAD_FILE} 
+
+sed -i -e "s/DATA_FILE_NAME/..\/${DATA_FILE}/g" "${TEMP_LOAD_FILE}" 
+psql -d "${DB}" -f "${TEMP_LOAD_FILE}"
+
+rm "${TEMP_LOAD_FILE}"
 
 echo "DONE!"
 

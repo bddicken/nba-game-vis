@@ -24,7 +24,7 @@ def find_between( s, first, last ):
         return ""
 
 def loadData():
-    print args.inputFile
+    #print args.inputFile
     file = open(args.inputFile)
     reader = csv.reader(file, delimiter="\t")
     d = list(reader)

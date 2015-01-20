@@ -1,5 +1,5 @@
 -- TODO Make better!
 
-COPY playbyplay FROM './../download/AllData2011playoffs20111224./playbyplay201106122333.txt' WITH (format csv, delimiter E'\t')
+COPY playbyplay FROM 'DATA_FILE_NAME' WITH (format csv, delimiter E'\t')
 ;
 

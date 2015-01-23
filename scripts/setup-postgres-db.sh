@@ -9,9 +9,11 @@
 set -o nounset
 
 # get data load file from command line
-DATA_FILE="${1}"
+DATA_DIR="${1}"
+#PLAYERS_FILE="${2}"
 
 # Some variables
+PWD=$(pwd)
 SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 DB_DIR="nbadb"
 DB="nba"
@@ -38,16 +40,24 @@ createdb "${DB}"
 psql -d "${DB}" -f "${SCHEMA_SQL_FILE}"
 
 # Load data
-echo "${DATA_FILE}" 
+echo "${DATA_DIR}" 
 echo "${SCRIPT_DIR}/resources/load_data.sql"
 
 TEMP_LOAD_FILE=$(mktemp)
 cp "${LOAD_DATA_SQL_FILE}" ${TEMP_LOAD_FILE} 
 
-sed -i -e "s/DATA_FILE_NAME/..\/${DATA_FILE}/g" "${TEMP_LOAD_FILE}" 
+PBP_FILE=$(realpath "${DATA_DIR}/pbp.txt")
+PBP_FILE=$(echo "${PBP_FILE}" | sed -e 's/[\/&]/\\&/g')
+
+PLAYERS_FILE=$(realpath "${DATA_DIR}/players.txt")
+PLAYERS_FILE=$(echo "${PLAYERS_FILE}" | sed -e 's/[\/&]/\\&/g')
+
+sed -i -e "s/PBP_FILE_NAME/${PBP_FILE}/g" "${TEMP_LOAD_FILE}"
+sed -i -e "s/PLAYERS_FILE_NAME/${PLAYERS_FILE}/g" "${TEMP_LOAD_FILE}"
+
 psql -d "${DB}" -f "${TEMP_LOAD_FILE}"
 
-rm "${TEMP_LOAD_FILE}"
+#rm "${TEMP_LOAD_FILE}"
 
 echo "DONE!"
 

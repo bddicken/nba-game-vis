@@ -1,8 +1,10 @@
 #!/bin/bash
+#
+# Scripts maybe not needed anymore?
 
 DATA_ROOT_DIR="${1}"
 
-PBP_FILES=$(find "${DATA_ROOT_DIR}" | grep 'playoff\|reg' | grep 'playbyplay')
+PBP_FILES=$(find "${DATA_ROOT_DIR}" | grep 'playoff\|regular' | grep 'playbyplay')
 
 #echo ${PBP_FILES}
 

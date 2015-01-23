@@ -12,10 +12,11 @@ echo "Downloading all data..."
 ${SCRIPT_DIR}/fetch-nba-data.sh
 
 echo "Processing all data..."
-${SCRIPT_DIR}/process-all-data.sh "${SCRIPT_DIR}/download" > data_file.txt
+mkdir "${SCRIPT_DIR}/nbaout"
+python process-data.py -i "${SCRIPT_DIR}/download/" -o "${SCRIPT_DIR}/nbaout" -s "10-11"
 
 echo "Setting up postgres data..."
-${SCRIPT_DIR}/setup-postgres-db.sh data_file.txt
+${SCRIPT_DIR}/setup-postgres-db.sh "${SCRIPT_DIR}/nbaout"
 
 echo "DONE!"
 

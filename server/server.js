@@ -3,6 +3,8 @@
 // BASE SETUP
 // =============================================================================
 
+var dbConnectString = 'mongodb://localhost/nbadb';
+
 var express    = require('express');
 var bodyParser = require('body-parser');
 var mongoose   = require('mongoose');
@@ -18,7 +20,7 @@ app.use(bodyParser.json());
 var port = process.env.PORT || 8080;
 
 // TODO: local database
-mongoose.connect('mongodb://node:node@novus.modulusmongo.net:27017/Iganiq8o'); 
+mongoose.connect(dbConnectString); 
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -38,12 +40,19 @@ router.get('/', function(req, res) {
 // more routes for our API will happen here
 
 router.route('/bears')
+.get(function(req, res) {
+    Bear.find(function(err, bears) {
+        if (err) { res.send(err); }
+        res.json(bears);
+    });
+})
 .post(function(req, res) {
-    var bear = new Bear();      
+    console.log("creating new item with name=" + req.body.name); 
+    
+    var bear = new Bear(); 
     bear.name = req.body.name;  
     bear.save(function(err) {
-        if (err)
-        res.send(err);
+        if (err) { res.send(err); }
         res.json({ message: 'Bear created!' });
     });
 });

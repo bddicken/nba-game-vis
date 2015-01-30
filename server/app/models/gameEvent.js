@@ -5,7 +5,7 @@ var GameEventSchema   = new Schema({
     season: String,
     team: String,
     player: String,
-    playerID: {type: Number, ref: 'Player'},
+    playerID: {type: String, ref: 'Player'},
     gameID: String,
     eventType: String,
     eventDetail: String

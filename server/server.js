@@ -81,7 +81,8 @@ router.route('/players/:player_id')
 
 router.route('/gameEvents')
 .get(function(req, res) {
-    GameEvent.find().populate('player').exec(function(err, gameEvents) {
+    //GameEvent.find().populate('player').exec(function(err, gameEvents) {
+    GameEvent.find().exec(function(err, gameEvents) {
         if (err) { res.send(err); }
         res.json(gameEvents);
         // Use "populate" to link the gameEvents to the Player objects

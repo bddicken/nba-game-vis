@@ -30,6 +30,13 @@ var router = express.Router();
 // middleware to use for all requests
 router.use(function(req, res, next) {
     console.log('Handling generic request.');
+    
+    // Dangerous!
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With");
+    
+    res.header("Content-Type", "text/cache-manifest")
+    
     next(); 
 });
 

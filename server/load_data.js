@@ -73,6 +73,13 @@ csv
         var playerID    = data[6];
         var eventType   = data[7];
         var eventDetail = data[8];
+        
+        // process time
+        time = time.replace(/:/g, "");
+        mins = Math.floor(time / 100);
+        secs = Math.floor(time % 100);
+        timeInSecs = mins*60 + secs;
+        //console.log(time + " " + mins + " " + secs + " " + timeInSecs)
 
         if (playerID in playerMap) {
             mongoPlayerID = playerMap[playerID]._id;
@@ -87,6 +94,7 @@ csv
         gameEvent.team = teamID; 
         gameEvent.season = season; 
         gameEvent.gameID = gameID;
+        gameEvent.secondsIntoGame = timeInSecs;
         gameEvent.player = playerName;
         gameEvent.playerID = mongoPlayerID;
         gameEvent.eventType = eventType;

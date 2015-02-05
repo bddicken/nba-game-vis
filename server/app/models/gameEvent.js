@@ -7,6 +7,7 @@ var GameEventSchema   = new Schema({
     player: String,
     playerID: {type: String, ref: 'Player'},
     gameID: String,
+    secondsIntoGame: Number,
     eventType: String,
     eventDetail: String
 });

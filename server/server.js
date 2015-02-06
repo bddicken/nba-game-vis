@@ -177,28 +177,19 @@ router.route('/gameSummary/:filters')
             else 
             { summary[minute][eventType]++; }
             }
-            ///*
-            // fill in all nulls
-            for(var i = 0; i < summary.length; i++)
-            {
-                if (summary[i] == null || summary[i] == undefined)
-                {
+            for(var i = 0; i < summary.length; i++) {
+                if (summary[i] == null || summary[i] == undefined) {
                     summary[i] = {}; 
                     summary[i]['minute'] = i;
-
                 }
-                for (var key in allEventTypes)
-                {
-                    if (summary[i][key] == null || summary[i][key] == undefined)
-                    {
+                for (var key in allEventTypes) {
+                    if (summary[i][key] == null || summary[i][key] == undefined){
                         summary[i][key] = 0; 
                     }
                 }
             }
-            //*/      
             res.json(summary);
         });
-
 });
 
 

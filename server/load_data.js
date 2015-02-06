@@ -27,11 +27,10 @@ playerMap = {}
 // Load and persist all players
 function loadPlayers()
 {
-csv
-    .fromPath(program.playerData, {delimiter:'\t'})
-    .on("data", function(data){
-	//console.log(data);
-        
+var playerCount = 0;
+
+csv.fromPath(program.playerData, {delimiter:'\t'}).on("data", function(data){
+       
         var playerID = data[0];
         var name     = data[1];
         var fullName = data[2];
@@ -48,7 +47,7 @@ csv
         player.save(function(err) {
             if (err) { console.log('FAILED -> ' + err); }
             else { 
-                //console.log('Player created!'); 
+                console.log((playerCount++) + " player created."); 
             }
         });
     })
@@ -58,6 +57,7 @@ csv
 // Load and persist all game events
 function loadPBP()
 {
+var pbpCount = 0;
 csv
     .fromPath(program.eventData, {delimiter:'\t'})
     .on("data", function(data){
@@ -104,6 +104,7 @@ csv
             if (err) { console.log('FAILED -> ' + err); }
             else { 
                 //console.log('GameEvent created!'); 
+                console.log((pbpCount++) + " pbp event created."); 
             }
         });
     })

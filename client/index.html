@@ -24,7 +24,7 @@
       fill: LightSeaGreen;
     }
     .bar:hover {
-      fill: DarkSeaGreen;
+      fill: Coral;
     }
     .axis {
       font: 10px sans-serif;
@@ -141,7 +141,7 @@
 function addPlotToBody(url)
 {
     var margin = {top: 20, right: 20, bottom: 30, left: 50},
-        width = 1000 - margin.left - margin.right,
+        width = 900 - margin.left - margin.right,
         height = 200 - margin.top - margin.bottom;
 
     var parseDate = d3.time.format("%d-%b-%y").parse;
@@ -160,9 +160,9 @@ function addPlotToBody(url)
         .orient("left");
 
     var area = d3.svg.area()
-        .x(function(d) { return x(d.date); })
+        .x(function(d) { return x(d.minute); })
         .y0(height)
-        .y1(function(d) { return y(d.close); });
+        .y1(function(d) { return y(d.Shot); });
 
     var svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -189,7 +189,7 @@ function addPlotToBody(url)
           .attr("y", 6)
           .attr("dy", ".71em")
           .style("text-anchor", "end")
-          .text("Number of events");
+          .text("#");
 
       svg.selectAll(".bar")
           .data(data)
@@ -206,10 +206,8 @@ function addPlotToBody(url)
 
 urls = [
     "http://benjdd.com:8080/api/gameSummary/{\"player\":\"James\"}",
-    "http://benjdd.com:8080/api/gameSummary/{\"player\":\"Bryant\"}",
-    "http://benjdd.com:8080/api/gameSummary/{\"player\":\"Anthony\"}",
-    "http://benjdd.com:8080/api/gameSummary/{\"player\":\"Gasol\"}",
-    "http://benjdd.com:8080/api/gameSummary/{\"player\":\"Frye\"}",
+    "http://benjdd.com:8080/api/gameSummary/{\"player\":\"Wade\"}",
+    "http://benjdd.com:8080/api/gameSummary/{\"player\":\"Bosh\"}",
 ];
 for (var i in urls)
 {

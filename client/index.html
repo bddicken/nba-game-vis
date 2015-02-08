@@ -5,64 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>jQuery UI Selectmenu - Product Selection</title>
 
+  <!-- D3 -->
   <script src="http://d3js.org/d3.v3.js"></script>
+
+  <!-- JQuery -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  
+  <!-- JQuery UI -->
   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css" />
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
-  <style>
-    .bar {
-      fill: LightSeaGreen;
-    }
-    .bar:hover {
-      fill: Coral;
-    }
-    .axis {
-      font: 10px sans-serif;
-    }
-    .axis path,
-    .axis line {
-      fill: none;
-      stroke: #000;
-      shape-rendering: crispEdges;
-    }
-    .x.axis path {
-      display: none;
-    }
-    fieldset {
-      border: 0;
-      margin-left:auto;
-      margin-right:auto;
-    }
-    label {
-      display: block;
-      margin-left:auto;
-      margin-right:auto;
-      margin-bottom:20px;
-      font-size:20px;
-    }
-    select {
-      width: 200px;
-    }
-    .dropdown {
-      display:inline;
-      margin-left:auto;
-      margin-right:auto;
-      margin-top:20px;
-      font-size:18x;
-    }
-    body {
-      font: 10px sans-serif;
-    }
-    .axis path,
-    .axis line {
-      fill: none;
-      stroke: #000;
-      shape-rendering: crispEdges;
-    }
-    .area {
-      fill: steelblue;
-    }
-  </style>
+
+  <!-- My styling -->
+  <style src="style/style.css"></style>
+
 </head>
 <body>
 
@@ -127,75 +82,10 @@
  
 </body>
 
+<script src="js/plot.js"></script>
+<script src="js/ui_callbacks.js"></script>
+
 <script>
-
-/*
- * append a plot to the body
-*/
-function addPlotToBody(url)
-{
-    var margin = {top: 20, right: 20, bottom: 30, left: 50},
-        width = 900 - margin.left - margin.right,
-        height = 200 - margin.top - margin.bottom;
-
-    var parseDate = d3.time.format("%d-%b-%y").parse;
-
-    var x = d3.scale.ordinal()
-        .rangeRoundBands([0, width], .1);
-    var y = d3.scale.linear()
-        .range([height, 0]);
-
-    var xAxis = d3.svg.axis()
-        .scale(x)
-        .orient("bottom");
-
-    var yAxis = d3.svg.axis()
-        .scale(y)
-        .orient("left");
-
-    var area = d3.svg.area()
-        .x(function(d) { return x(d.minute); })
-        .y0(height)
-        .y1(function(d) { return y(d.Shot); });
-
-    var svg = d3.select("body").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    d3.json(url, function(error, data) {
-      //console.log(data);
-      
-      x.domain(data.map(function(d) { /*console.log(d);*/ return d.minute; }));
-      y.domain([0, d3.max(data, function(d) { return d.Shot; })]);
-
-      svg.append("g")
-          .attr("class", "x axis")
-          .attr("transform", "translate(0," + height + ")")
-          .call(xAxis);
-
-      svg.append("g")
-          .attr("class", "y axis")
-          .call(yAxis)
-          .append("text")
-          .attr("transform", "rotate(-90)")
-          .attr("y", 6)
-          .attr("dy", ".71em")
-          .style("text-anchor", "end")
-          .text("#");
-
-      svg.selectAll(".bar")
-          .data(data)
-          .enter().append("rect")
-          .attr("class", "bar")
-          .attr("x", function(d) { return x(d.minute); })
-          .attr("width", x.rangeBand())
-          .attr("y", function(d) { return y(d.Shot); })
-          .attr("height", function(d) { return height - y(d.Shot); });
-    })
-    .header("Content-Type","application/json");
-}
 
 gameSummaryURLBase = "http://benjdd.com:8080/api/gameSummary/";
 urls = [
@@ -206,40 +96,10 @@ urls = [
 for (var i in urls)
 {
     console.log("plot " + i + " URL is " + urls[i]);
-    addPlotToBody(urls[i]);
+    addPlotToBody("plot from URL \"" + urls[i]+ "\"", urls[i]);
 }
 
 </script>
 
-  <script>
-  $(function() {
-    
-    $( "#season" ).selectmenu({});
-    $( "#team" ).selectmenu({});
-    $( "#player" ).selectmenu({});
-    $( "#eventType" ).selectmenu({});
-    $( "input[type=submit], button" )
-        .button()
-        .click(function( event ) {
-            event.preventDefault();
-            
-            var filterKeys = ["team", "player", "season", "eventType"];
-            var filters = {};
-            
-            for(var i in filterKeys) { 
-                var key = filterKeys[i]
-                var value = document.getElementById(key).value; 
-                if (value != "")
-                    filters[key] = value 
-            } 
-            filtersJSON = JSON.stringify(filters);
-            console.log(filters);
-            console.log(filtersJSON);
-            addPlotToBody(gameSummaryURLBase + filtersJSON);
-
-            //greateNewGraph(filters);
-        });
-  });
-  </script>
-
 </html>
+

@@ -9,16 +9,6 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css" />
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
-
-  <script>
-  $(function() {
-    
-    $( "#season" ).selectmenu({});
-    $( "#team" ).selectmenu({});
-    $( "#player" ).selectmenu({});
-    $( "#eventType" ).selectmenu({});
-  });
-  </script>
   <style>
     .bar {
       fill: LightSeaGreen;
@@ -83,9 +73,9 @@
     <fieldset>
       
       <div class="dropdown">
-      <!--<label for="team">Team</label>-->
       <select name="team" id="team">
         <option value="" disabled selected>Team</option>
+        <option value="">All</option>
         <option value="PHX">PHX</option>
         <option value="OKC">OKC</option>
         <option value="MEM">MEM</option>
@@ -93,9 +83,9 @@
       </div>
       
       <div class="dropdown">
-      <!--<label for="season">Season</label>-->
       <select name="season" id="season">
         <option value="" disabled selected>Season</option>
+        <option value="">All</option>
         <option value="2006-2007">2006-2007</option>
         <option value="2007-2008">2007-2008</option>
         <option value="2008-2009">2008-2009</option>
@@ -103,19 +93,19 @@
       </div>
       
       <div class="dropdown">
-      <!--<label for="player">Player</label>-->
       <select name="player" id="player">
         <option value="" disabled selected>Player</option>
-        <option value="Goran Dragic">Goran Dragic</option>
-        <option value="Kevin Durant">Kevin Durant</option>
-        <option value="Marc Gasol">Marc Gasol</option>
+        <option value="">All</option>
+        <option value="Dragic">Goran Dragic</option>
+        <option value="Durant">Kevin Durant</option>
+        <option value="Gasol">Marc Gasol</option>
       </select>
       </div>
       
       <div class="dropdown">
-      <!--<label for="player">Player</label>-->
       <select name="eventType" id="eventType">
         <option value="" disabled selected>Event Type</option>
+        <option value="">All</option>
         <option value="Shot">Shot</option>
         <option value="Steal">Steal</option>
         <option value="Rebound">Rebound</option>
@@ -125,6 +115,10 @@
         <option value="Checkin">Check in</option>
         <option value="Checkout">Check out</option>
       </select>
+      </div>
+
+      <div class="dropdown">
+      <button value="+">+</button>
       </div>
 
     </fieldset>
@@ -203,7 +197,7 @@ function addPlotToBody(url)
     .header("Content-Type","application/json");
 }
 
-
+gameSummaryURLBase = "http://benjdd.com:8080/api/gameSummary/";
 urls = [
     "http://benjdd.com:8080/api/gameSummary/{\"player\":\"James\"}",
     "http://benjdd.com:8080/api/gameSummary/{\"player\":\"Wade\"}",
@@ -216,5 +210,36 @@ for (var i in urls)
 }
 
 </script>
+
+  <script>
+  $(function() {
+    
+    $( "#season" ).selectmenu({});
+    $( "#team" ).selectmenu({});
+    $( "#player" ).selectmenu({});
+    $( "#eventType" ).selectmenu({});
+    $( "input[type=submit], button" )
+        .button()
+        .click(function( event ) {
+            event.preventDefault();
+            
+            var filterKeys = ["team", "player", "season", "eventType"];
+            var filters = {};
+            
+            for(var i in filterKeys) { 
+                var key = filterKeys[i]
+                var value = document.getElementById(key).value; 
+                if (value != "")
+                    filters[key] = value 
+            } 
+            filtersJSON = JSON.stringify(filters);
+            console.log(filters);
+            console.log(filtersJSON);
+            addPlotToBody(gameSummaryURLBase + filtersJSON);
+
+            //greateNewGraph(filters);
+        });
+  });
+  </script>
 
 </html>

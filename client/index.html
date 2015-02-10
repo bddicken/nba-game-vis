@@ -16,7 +16,8 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 
   <!-- My styling -->
-  <style src="style/style.css"></style>
+  <style  type="text/css" src="style/style.css"></style>
+  <link rel="stylesheet" type="text/css" href="style/style.css">
 
 </head>
 <body>
@@ -51,9 +52,7 @@
       <select name="player" id="player">
         <option value="" disabled selected>Player</option>
         <option value="">All</option>
-        <option value="Dragic">Goran Dragic</option>
-        <option value="Durant">Kevin Durant</option>
-        <option value="Gasol">Marc Gasol</option>
+        <!-- all other players will be loaded here dynamically -->
       </select>
       </div>
       
@@ -78,26 +77,40 @@
 
     </fieldset>
   </form>
+  <div id="plots"></div>
 </div>
  
 </body>
 
+<script src="js/urls.js"></script>
 <script src="js/plot.js"></script>
 <script src="js/ui_callbacks.js"></script>
 
 <script>
 
-gameSummaryURLBase = "http://benjdd.com:8080/api/gameSummary/";
-urls = [
-    "http://benjdd.com:8080/api/gameSummary/{\"player\":\"James\"}",
-    "http://benjdd.com:8080/api/gameSummary/{\"player\":\"Wade\"}",
-    "http://benjdd.com:8080/api/gameSummary/{\"player\":\"Bosh\"}",
+filters = [
+    "{\"player\":\"James\"}",
+    "{\"player\":\"Wade\"}",
+    "{\"player\":\"Bosh\"}",
 ];
-for (var i in urls)
+for (var i in filters)
 {
-    console.log("plot " + i + " URL is " + urls[i]);
-    addPlotToBody("plot from URL \"" + urls[i]+ "\"", urls[i]);
+    //console.log("plot " + i + " with filters " +filters[i]);
+    nbadvPlotter.addPlotToBody("plot from URL \"" + filters[i]+ "\"", nbadvURLs.gameSummaryURL + filters[i]);
 }
+
+$.getJSON(nbadvURLs.playersURL, function( data ) {
+    sortedData = data.sort(function(lhs,rhs){
+        lhss = lhs.fullName.replace(/\W/g, '').toLowerCase();
+        rhss = rhs.fullName.replace(/\W/g, '').toLowerCase();
+        return lhss.localeCompare(rhss);
+    });
+    $.each(data, function(i, item) {
+        var option = $('<option/>');
+        option.attr({ 'value': item['name'] }).text(item['fullName']);
+        $('#player').append(option);
+    });
+});
 
 </script>
 

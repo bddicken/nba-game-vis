@@ -40,6 +40,8 @@ select {
 }
 body {
   font: 10px sans-serif;
+  background-color:#eee;
+  background-repeat: repeat-y;
 }
 .axis path,
 .axis line {
@@ -51,3 +53,9 @@ body {
   fill: steelblue;
 }
 
+.ui-selectmenu-menu {
+    max-height: 400px;
+    overflow-y: auto;   /* prevent horizontal scrollbar */
+    overflow-x: hidden; /* add padding to account for vertical scrollbar */
+    z-index:1000 !important;
+}

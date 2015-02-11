@@ -8,6 +8,7 @@
 from __future__ import print_function
 import csv
 import argparse
+import json
 import fnmatch
 import os
 import sys
@@ -55,7 +56,7 @@ class NBADataProcessor:
 
     def getOutputFileNamesOrDie(self):
         rootAbsPath = os.path.abspath(self.outputDir);
-
+        '''
         self.seasonsOutputFileName = rootAbsPath + "/seasons.txt"
         self.seasonsOutputFile = open(self.seasonsOutputFileName, 'a+')
 
@@ -70,6 +71,9 @@ class NBADataProcessor:
 
         self.teamsOutputFileName = rootAbsPath + "/teams.txt"
         self.teamsOutputFile = open(self.teamsOutputFileName, 'a+')
+        '''
+        self.nbaOutputFileName = rootAbsPath + "/nba.txt"
+        self.nbaOutputFile = open(self.nbaOutputFileName, 'a+')
 
     def openScratchFilesOrDie(self):
         scratchDirAbs = os.path.abspath(self.scratchDir)
@@ -90,13 +94,22 @@ class NBADataProcessor:
             print ("Failed to get all input files")
             sys.exit(1)
     
-    def printDictToTSV(self, dictionary, fileHandle):
+    def printDictToFile(self, dictionary, fileHandle):
         for key, value in dictionary.iteritems():
-            line = ''
-            for key2, value2 in value.iteritems():
-                line += str(value2) + '\t';
-                pass
-            print(line,file=fileHandle)
+            # print JSON
+            print(json.dumps(value),file=fileHandle)
+
+            #for key2, value2 in value.iteritems():
+            #    line += str(value2) + '\t';
+            #    pass
+
+            # print TSV
+
+            #line = ''
+            #for key2, value2 in value.iteritems():
+            #    line += str(value2) + '\t';
+            #    pass
+            #print(line,file=fileHandle)
     
     def processSeasonData(self):
 
@@ -271,21 +284,32 @@ class NBADataProcessor:
             self.gameEvents[str(self.gameEventIDCounter)] = gameEvent
             self.gameEventIDCounter = self.gameEventIDCounter + 1
 
+    def saveAllData(self):
+        nbaData = {                         \
+            'players' : self.players,       \
+            'games' : self.games,           \
+            'teams' : self.teams,           \
+            'gameEvents' : self.gameEvents, \
+            'seasons' : self.seasons        \
+        }
+        print(json.dumps(nbaData),file=self.nbaOutputFile)
 
+    # TODO: remove these prehaps?
+    
     def printPlayerData(self):
-        self.printDictToTSV(self.players, self.playersOutputFile)
+        self.printDictToFile(self.players, self.playersOutputFile)
     
     def printGameData(self):
-        self.printDictToTSV(self.games, self.gamesOutputFile)
+        self.printDictToFile(self.games, self.gamesOutputFile)
     
     def printTeamData(self):
-        self.printDictToTSV(self.teams, self.teamsOutputFile)
+        self.printDictToFile(self.teams, self.teamsOutputFile)
     
     def printGameEventData(self):
-        self.printDictToTSV(self.gameEvents, self.gameEventsOutputFile)
+        self.printDictToFile(self.gameEvents, self.gameEventsOutputFile)
     
     def printSeasonData(self):
-        self.printDictToTSV(self.seasons, self.seasonsOutputFile)
+        self.printDictToFile(self.seasons, self.seasonsOutputFile)
 
 def generateScratchFilesOnDisk(inputDir, scratchDir):
 
@@ -331,19 +355,21 @@ def processAll():
     nbadp.getOutputFileNamesOrDie()
 
     nbadp.processGameData()
-    nbadp.printGameData()
+    #nbadp.printGameData()
     
     nbadp.processSeasonData()
-    nbadp.printSeasonData()
+    #nbadp.printSeasonData()
     
     nbadp.processTeamData()
-    nbadp.printTeamData()
+    #nbadp.printTeamData()
     
     nbadp.processPlayerData()
-    nbadp.printPlayerData()
+    #nbadp.printPlayerData()
     
     nbadp.processGameEventData()
-    nbadp.printGameEventData()
+    #nbadp.printGameEventData()
+    
+    nbadp.saveAllData()
     
 
 def main():

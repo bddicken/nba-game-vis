@@ -13,7 +13,7 @@ ${SCRIPT_DIR}/fetch-nba-data.sh
 
 echo "Processing all data..."
 mkdir "${SCRIPT_DIR}/nbaout"
-python process-data.py -i "${SCRIPT_DIR}/download/" -o "${SCRIPT_DIR}/nbaout" -s "10-11"
+python process-data.py -i "${SCRIPT_DIR}/download/" -o "${SCRIPT_DIR}/nbaout" -s "${SCRIPT_DIR}/nbascratch"
 
 echo "Setting up postgres data..."
 ${SCRIPT_DIR}/setup-postgres-db.sh "${SCRIPT_DIR}/nbaout"

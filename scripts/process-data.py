@@ -16,7 +16,8 @@ optionsParser = argparse.ArgumentParser()
 
 optionsParser.add_argument('--inputDir', '-i', required=True, default='./data', help="Input dir")
 optionsParser.add_argument('--outputDir', '-o', required=True, default='./out_data', help="Output dir")
-optionsParser.add_argument('--season', '-s', required=True, default='./input.txt', help="Format XXXX-XXXX")
+optionsParser.add_argument('--scratchDir', '-s', required=True, default='./scratch_data', help="Scratch dir")
+optionsParser.add_argument('--season', '-n', required=True, default='./input.txt', help="Format XX-XX")
 
 args = optionsParser.parse_args()
 
@@ -25,10 +26,24 @@ def PrintOptions(self):
 
 class NBADataProcessor:
 
-    def __init__(self, iDir, oDir, sea):
+    def __init__(self, iDir, sDir, oDir, sea):
+
         self.inputDir = iDir
+        self.scratchDir = sDir
         self.outputDir = oDir
         self.season = sea
+        
+        self.gameIDCounter      = 0
+        self.teamIDCounter      = 0
+        self.playerIDCounter    = 0
+        self.gameEventIDCounter = 0
+        self.seasonIDCounter    = 0
+
+        self.games      = {}
+        self.teams      = {}
+        self.players    = {}
+        self.gameEvents = {}
+        self.seasons    = {}
 
     def find_between(self, s, first, last ):
         try:
@@ -40,71 +55,153 @@ class NBADataProcessor:
 
     def getOutputFileNamesOrDie(self):
         rootAbsPath = os.path.abspath(self.outputDir);
-        self.pbpOutputFileName = rootAbsPath + "/pbp.txt"
-        self.pbpOutputFile = open(self.pbpOutputFileName, 'a+')
+
+        self.seasonsOutputFileName = rootAbsPath + "/seasons.txt"
+        self.seasonsOutputFile = open(self.seasonsOutputFileName, 'a+')
+
+        self.gameEventsOutputFileName = rootAbsPath + "/gameEvents.txt"
+        self.gameEventsOutputFile = open(self.gameEventsOutputFileName, 'a+')
+
         self.playersOutputFileName = rootAbsPath + "/players.txt"
         self.playersOutputFile = open(self.playersOutputFileName, 'a+')
 
-    def getInputFileNamesOrDie(self):
-        rootAbsPath = os.path.abspath(self.inputDir)
-        for file in os.listdir(rootAbsPath):
-            if fnmatch.fnmatch(file, '*playbyplay*'):
-                self.pbpInputFileName = rootAbsPath + "/" + file
-                self.pbpInputFile = open(self.pbpInputFileName, 'r+')
-            if fnmatch.fnmatch(file, '*players2*'):
-                self.playersInputFileName = rootAbsPath + "/" + file
-                self.playersInputFile = open(self.playersInputFileName, 'r+')
+        self.gamesOutputFileName = rootAbsPath + "/games.txt"
+        self.gamesOutputFile = open(self.gamesOutputFileName, 'a+')
 
-        if not self.playersInputFile or not self.pbpInputFile:
+        self.teamsOutputFileName = rootAbsPath + "/teams.txt"
+        self.teamsOutputFile = open(self.teamsOutputFileName, 'a+')
+
+    def openScratchFilesOrDie(self):
+        scratchDirAbs = os.path.abspath(self.scratchDir)
+        
+        self.gameEventsScratchFileName = scratchDirAbs + "/gameEvents_raw.txt"
+        self.gameEventsScratchFile = open(self.gameEventsScratchFileName, 'r+')
+
+        self.playersScratchFileName = scratchDirAbs + "/players_raw.txt"
+        self.playersScratchFile = open(self.playersScratchFileName, 'r+')
+
+        self.gamesScratchFileName = scratchDirAbs + "/games_raw.txt"
+        self.gamesScratchFile = open(self.gamesScratchFileName, 'r+')
+
+        self.teamsScratchFileName = scratchDirAbs + "/teams_raw.txt"
+        self.teamsScratchFile = open(self.teamsScratchFileName, 'r+')
+
+        if not self.gameEventsScratchFile or not self.playersScratchFile or not self.gamesScratchFile or not self.teamsScratchFile :
             print ("Failed to get all input files")
             sys.exit(1)
     
-    def processPlayersData(self):
+    def printDictToTSV(self, dictionary, fileHandle):
+        for key, value in dictionary.iteritems():
+            line = ''
+            for key2, value2 in value.iteritems():
+                line += str(value2) + '\t';
+                pass
+            print(line,file=fileHandle)
+    
+    def processSeasonData(self):
 
-        readerExisting = csv.reader(self.playersOutputFile, delimiter="\t")
-        dExisting = list(readerExisting)
-        reader = csv.reader(self.playersInputFile, delimiter="\t")
-        d = list(reader)
+        self.gamesScratchFile.seek(0)
+        reader = csv.reader(self.gamesScratchFile, delimiter="\t")
+        data = list(reader)
 
-        # populate map for already computed players
-        self.players = {'':-1}
-        counter=0
-        iterd = iter(dExisting)
-        if len(dExisting) > 0:
+        # Skip over first row of input
+        iterd = iter(data)
+        if len(data) > 0:
             next(iterd)
-        for row in iterd:
-            playerID = row[0]
-            playerName = row[1]
-            self.players[playerName] = playerID
-            counter = max(counter, int(float(playerID)))
-        counter = counter + 1
 
-        iterd = iter(d)
-        next(iterd)
-        if len(dExisting) > 0:
-            next(iterd)
         for row in iterd:
-            playerID = row[0]
+            seasonName = row[1]
+            seasonID = self.seasonIDCounter
+
+            if seasonName not in self.seasons:
+                season = {'name': str(seasonName), 'id': str(seasonID) }
+                self.seasons[seasonName] = season
+                self.seasonIDCounter = self.seasonIDCounter + 1
+    
+    def processGameData(self):
+
+        self.gamesScratchFile.seek(0)
+        reader = csv.reader(self.gamesScratchFile, delimiter="\t")
+        data = list(reader)
+
+        # Skip over first row of input
+        iterd = iter(data)
+        if len(data) > 0:
+            next(iterd)
+
+        for row in iterd:
+            gameYear = row[1]
+            gameDate = row[2]
+            gameStringID = row[3]
+            homeTeam = ''
+            awayTeam = ''
+
+            if (len(row) >= 10):
+                homeTeam = row[7]
+                awayTeam = row[9]
+            else:
+                # TODO: log error
+                pass
+
+            gameID = self.gameIDCounter
+
+            if gameStringID not in self.games:
+                game = {'season': str(gameYear), 'date': str(gameDate), 'name': str(gameStringID), 'homeTeam': str(homeTeam), 'awayTeam': str(awayTeam), 'id': str(gameID)}
+                self.games[gameStringID] = game
+                self.gameIDCounter = self.gameIDCounter + 1
+    
+    def processTeamData(self):
+
+        self.teamsScratchFile.seek(0)
+        reader = csv.reader(self.teamsScratchFile, delimiter="\t")
+        data = list(reader)
+
+        # Skip over first row of input
+        iterd = iter(data)
+        if len(data) > 0:
+            next(iterd)
+
+        for row in iterd:
+            teamName = row[0]
+            teamID = self.teamIDCounter
+            if teamName  not in self.teams:
+                team = {'name': str(teamName), 'id': str(teamID)}
+                self.teams[teamName] = team
+                self.teamIDCounter = self.teamIDCounter + 1
+    
+    def processPlayerData(self):
+
+        self.playersScratchFile.seek(0)
+        reader = csv.reader(self.playersScratchFile, delimiter="\t")
+        data = list(reader)
+
+        # Skip over first row of input
+        iterd = iter(data)
+        if len(data) > 0:
+            next(iterd)
+
+        for row in iterd:
+            # not modeling player's team for now.
             playerName = row[1]
             playerTrueName = row[2]
+            playerID = self.playerIDCounter
+             
             if playerName not in self.players:
-                print(                        \
-                        str(counter) + "\t" + \
-                        playerName   + "\t" + \
-                        playerTrueName,       \
-                        file=self.playersOutputFile)
-                self.players[playerName] = int(counter)
-                counter = counter + 1
+                player = {'name': str(playerName), 'trueName': str(playerTrueName), 'id': str(playerID)}
+                self.players[playerName] = player
+                self.playerIDCounter = self.playerIDCounter + 1
+    
+    def processGameEventData(self):
 
-    def processPBPData(self):
-
-        #for k1 in self.players:
-            #print(">" + k1 + "<")
-
-        reader = csv.reader(self.pbpInputFile, delimiter="\t")
+        self.gameEventsScratchFile.seek(0)
+        reader = csv.reader(self.gameEventsScratchFile, delimiter="\t")
         d = list(reader)
 
         for row in d:
+
+            if len(row) < 4:
+                # TODO: log error
+                continue
 
             # The imprtant bits of PBP data
             gameID = row[0]
@@ -154,41 +251,99 @@ class NBADataProcessor:
                     eventType = "Shot"
                     specificEventType = self.find_between(event, playerName, "Shot")
 
-
             if not eventType or playerName not in self.players:
                 continue
             
-            playerID = self.players[playerName]
+            playerID = self.players[playerName]['id']
 
-            print(                           \
-                    gameID          + "\t" + \
-                    seqID           + "\t" + \
-                    season          + "\t" + \
-                    time            + "\t" + \
-                    teamID          + "\t" + \
-                    playerName      + "\t" + \
-                    str(playerID)   + "\t" + \
-                    eventType       + "\t" + \
-                    specificEventType,       \
-                    file=self.pbpOutputFile)
+            gameEvent = {
+                'gameID':        gameID,         \
+                'seqID':         seqID,          \
+                'season':        season,         \
+                'time':          time,           \
+                'teamID':        teamID,         \
+                'playerName':    playerName,     \
+                'playerID':      str(playerID),  \
+                'eventType':     eventType,      \
+                'specEventType': specificEventType, \
+                'id': self.gameEventIDCounter    \
+            }
+            self.gameEvents[str(self.gameEventIDCounter)] = gameEvent
+            self.gameEventIDCounter = self.gameEventIDCounter + 1
 
+
+    def printPlayerData(self):
+        self.printDictToTSV(self.players, self.playersOutputFile)
+    
+    def printGameData(self):
+        self.printDictToTSV(self.games, self.gamesOutputFile)
+    
+    def printTeamData(self):
+        self.printDictToTSV(self.teams, self.teamsOutputFile)
+    
+    def printGameEventData(self):
+        self.printDictToTSV(self.gameEvents, self.gameEventsOutputFile)
+    
+    def printSeasonData(self):
+        self.printDictToTSV(self.seasons, self.seasonsOutputFile)
+
+def generateScratchFilesOnDisk(inputDir, scratchDir):
+
+    rootAbsPath = os.path.abspath(inputDir)
+    scratchDirAbs = os.path.abspath(scratchDir)
+
+    gameEventsRawFileName = scratchDirAbs + "/gameEvents_raw.txt"
+    playersRawFileName = scratchDirAbs + "/players_raw.txt"
+    gamesRawFileName = scratchDirAbs + "/games_raw.txt"
+    teamsRawFileName = scratchDirAbs + "/teams_raw.txt"
+    
+    gameEventsRawFile = open(gameEventsRawFileName, 'a+')
+    playersRawFile = open(playersRawFileName, 'a+')
+    gamesRawFile = open(gamesRawFileName, 'a+')
+    teamsRawFile = open(teamsRawFileName, 'a+')
+
+    # combine all files
+    for dirName in os.listdir(rootAbsPath):
+        for fileName in os.listdir(rootAbsPath + '/' + dirName):
+            inputFileName = rootAbsPath + '/' + dirName + "/" + fileName
+            inputFile = open(inputFileName, 'r+')
+            if fnmatch.fnmatch(fileName, '*gamelist*'):
+                gamesRawFile.write(inputFile.read())
+            elif fnmatch.fnmatch(fileName, '*teamstats*'):
+                teamsRawFile.write(inputFile.read())
+            elif fnmatch.fnmatch(fileName, '*playbyplay*'):
+                gameEventsRawFile.write(inputFile.read())
+            elif fnmatch.fnmatch(fileName, '*players2*'):
+                playersRawFile.write(inputFile.read())
+    
+    
 def processAll():
-    rootAbsPath = os.path.abspath(args.inputDir)
 
-    for dir_name in os.listdir(rootAbsPath):
+    print("inDir = " + args.inputDir)
+    print("scratchDir = " + args.scratchDir)
+    print("outDir = " + args.outputDir)
+    
+    generateScratchFilesOnDisk(args.inputDir, args.scratchDir)
 
-        inDir = rootAbsPath + "/" + dir_name
+    nbadp = NBADataProcessor(args.inputDir, args.scratchDir, args.outputDir, args.season)
 
-        print("processing = " + dir_name)
-        print("inDir = " + inDir)
-        print("outDir = " + args.outputDir)
+    nbadp.openScratchFilesOrDie()
+    nbadp.getOutputFileNamesOrDie()
 
-        nbadp = NBADataProcessor(inDir, args.outputDir, args.season)
-
-        nbadp.getOutputFileNamesOrDie()
-        nbadp.getInputFileNamesOrDie()
-        nbadp.processPlayersData()
-        nbadp.processPBPData()
+    nbadp.processGameData()
+    nbadp.printGameData()
+    
+    nbadp.processSeasonData()
+    nbadp.printSeasonData()
+    
+    nbadp.processTeamData()
+    nbadp.printTeamData()
+    
+    nbadp.processPlayerData()
+    nbadp.printPlayerData()
+    
+    nbadp.processGameEventData()
+    nbadp.printGameEventData()
     
 
 def main():

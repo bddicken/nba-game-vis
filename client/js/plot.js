@@ -153,7 +153,13 @@ nbadvPlotter = (function(){
     {
         var container = d3.select("#plots")
             .insert("div", ":first-child") // idiom for prepending in d3
-            .attr("style", "background:rgba(200,200,200,1.0); border-style:solid; border-thickness:1px; border-color:#aaa; border-radius:3px; margin:15px; width:1000px;")
+            .style("background", "rgba(200,200,200,1.0)")
+            .style("border-style", "solid")
+            .style("border-thickness", "1px")
+            .style("border-color", "#aaa")
+            .style("border-radius", "3px")
+            .style("margin", "15px")
+            .style("width","1000px")
             .attr("class", "nbaviswindow");
 
         container.append("button")

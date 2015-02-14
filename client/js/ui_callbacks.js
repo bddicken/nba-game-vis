@@ -27,7 +27,7 @@ $(function() {
             filtersJSON = JSON.stringify(filters);
             //console.log(filters);
             //console.log(filtersJSON);
-            nbadvPlotter.addPlotToBody(filtersJSON, nbadvURLs.gameSummaryURL + filtersJSON);
+            nbadvPlotter.addPlotToBodyURL(filtersJSON, nbadvURLs.gameSummaryURL + filtersJSON);
         });
 });
 

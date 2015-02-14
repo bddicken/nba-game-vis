@@ -79,7 +79,9 @@
   </form>
   <div id="plots"></div>
 </div>
- 
+
+<div id="existing"></div>
+
 </body>
 
 <script src="js/urls.js"></script>
@@ -96,7 +98,8 @@ filters = [
 for (var i in filters)
 {
     //console.log("plot " + i + " with filters " +filters[i]);
-    nbadvPlotter.addPlotToBody("plot from URL \"" + filters[i]+ "\"", nbadvURLs.gameSummaryURL + filters[i]);
+    nbadvPlotter.addPlotToBodyURL("plot from URL \"" + filters[i]+ "\"", nbadvURLs.gameSummaryURL + filters[i]);
+    //nbadvPlotter.getSelectionWithURLData("plot from URL \"" + filters[i]+ "\"", nbadvURLs.gameSummaryURL + filters[i]);
 }
 
 $.getJSON(nbadvURLs.playersURL, function( data ) {

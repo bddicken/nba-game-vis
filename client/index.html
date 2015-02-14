@@ -97,9 +97,7 @@ filters = [
 ];
 for (var i in filters)
 {
-    //console.log("plot " + i + " with filters " +filters[i]);
     nbadvPlotter.addPlotToBodyURL("plot from URL \"" + filters[i]+ "\"", nbadvURLs.gameSummaryURL + filters[i]);
-    //nbadvPlotter.getSelectionWithURLData("plot from URL \"" + filters[i]+ "\"", nbadvURLs.gameSummaryURL + filters[i]);
 }
 
 $.getJSON(nbadvURLs.playersURL, function( data ) {

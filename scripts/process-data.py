@@ -56,7 +56,7 @@ class NBADataProcessor:
 
     def getOutputFileNamesOrDie(self):
         rootAbsPath = os.path.abspath(self.outputDir);
-        '''
+        #'''
         self.seasonsOutputFileName = rootAbsPath + "/seasons.txt"
         self.seasonsOutputFile = open(self.seasonsOutputFileName, 'a+')
 
@@ -71,9 +71,13 @@ class NBADataProcessor:
 
         self.teamsOutputFileName = rootAbsPath + "/teams.txt"
         self.teamsOutputFile = open(self.teamsOutputFileName, 'a+')
+        
+        #'''
+
         '''
         self.nbaOutputFileName = rootAbsPath + "/nba.txt"
         self.nbaOutputFile = open(self.nbaOutputFileName, 'a+')
+        '''
 
     def openScratchFilesOrDie(self):
         scratchDirAbs = os.path.abspath(self.scratchDir)
@@ -355,21 +359,18 @@ def processAll():
     nbadp.getOutputFileNamesOrDie()
 
     nbadp.processGameData()
-    #nbadp.printGameData()
-    
     nbadp.processSeasonData()
-    #nbadp.printSeasonData()
-    
     nbadp.processTeamData()
-    #nbadp.printTeamData()
-    
     nbadp.processPlayerData()
-    #nbadp.printPlayerData()
-    
     nbadp.processGameEventData()
-    #nbadp.printGameEventData()
     
-    nbadp.saveAllData()
+    nbadp.printGameData()
+    nbadp.printSeasonData()
+    nbadp.printTeamData()
+    nbadp.printPlayerData()
+    nbadp.printGameEventData()
+    
+    #nbadp.saveAllData()
     
 
 def main():

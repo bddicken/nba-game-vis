@@ -32,9 +32,6 @@
       <select name="team" id="team">
         <option value="" disabled selected>Team</option>
         <option value="">All</option>
-        <option value="PHX">PHX</option>
-        <option value="OKC">OKC</option>
-        <option value="MEM">MEM</option>
       </select>
       </div>
       
@@ -42,9 +39,6 @@
       <select name="season" id="season">
         <option value="" disabled selected>Season</option>
         <option value="">All</option>
-        <option value="2006-2007">2006-2007</option>
-        <option value="2007-2008">2007-2008</option>
-        <option value="2008-2009">2008-2009</option>
       </select>
       </div>
       
@@ -72,7 +66,11 @@
       </div>
 
       <div class="dropdown">
-      <button value="+">+</button>
+      <button id="individualSummary" value="+ indiv">+ indiv</button>
+      </div> 
+
+      <div class="dropdown">
+      <button id="groupedSummary" value="+ grouped">+ grouped</button>
       </div>
 
     </fieldset>
@@ -97,19 +95,48 @@ filters = [
 ];
 for (var i in filters)
 {
-    nbadvPlotter.addPlotToBodyURL("plot from URL \"" + filters[i]+ "\"", nbadvURLs.gameSummaryURL + filters[i]);
+    nbadvPlotter.addPlotToBodyURL(
+        "plot from URL \"" + filters[i]+ "\"", 
+        nbadvURLs.gameSummaryURL + filters[i],
+        nbadvPlotter.addPlotToBody);
+}
+
+var stringSort = function(data, getKey) {
+    sortedData = data.sort(function(lhs,rhs){
+        lhss = getKey(lhs).replace(/\W/g, '').toLowerCase();
+        rhss = getKey(rhs).replace(/\W/g, '').toLowerCase();
+        return lhss.localeCompare(rhss);
+    });
+    return sortedData;
 }
 
 $.getJSON(nbadvURLs.playersURL, function( data ) {
-    sortedData = data.sort(function(lhs,rhs){
-        lhss = lhs.fullName.replace(/\W/g, '').toLowerCase();
-        rhss = rhs.fullName.replace(/\W/g, '').toLowerCase();
-        return lhss.localeCompare(rhss);
-    });
+    console.log("player");
+    sortedData = stringSort(data, function(d) {return d.fullName; });
     $.each(data, function(i, item) {
         var option = $('<option/>');
         option.attr({ 'value': item['name'] }).text(item['fullName']);
         $('#player').append(option);
+    });
+});
+
+$.getJSON(nbadvURLs.teamsURL, function( data ) {
+    console.log("team");
+    sortedData = stringSort(data, function(d) {return d.name; });
+    $.each(data, function(i, item) {
+        var option = $('<option/>');
+        option.attr({ 'value': item['name'] }).text(item['name']);
+        $('#team').append(option);
+    });
+});
+
+$.getJSON(nbadvURLs.seasonsURL, function( data ) {
+    console.log("season");
+    sortedData = stringSort(data, function(d) {return d.name; });
+    $.each(data, function(i, item) {
+        var option = $('<option/>');
+        option.attr({ 'value': item['name'] }).text(item['name']);
+        $('#season').append(option);
     });
 });
 

@@ -1,4 +1,7 @@
 // server.js
+//
+// TODO: disable delete requests for production
+//
 
 // BASE SETUP
 // =============================================================================
@@ -12,6 +15,9 @@ var app        = express();
 
 var Player = require('./app/models/player');
 var GameEvent = require('./app/models/gameEvent');
+var Season      = require('./app/models/season');
+var Team        = require('./app/models/team');
+var Game        = require('./app/models/game');
 
 var maxReturn = 100000000;
 
@@ -47,16 +53,17 @@ router.get('/', function(req, res) {
 });
 
 // All team routes here
-
+/*
 router.route('/teams')
 .get(function(req, res) {
-    var query = GameEvent.find().limit(maxReturn);
+    var query = Team.find().limit(maxReturn);
     query.select('-_id team');
     query.exec(function (err, teams) {
         if (err) { res.send(err); }
         res.json(teams);
     });
 });
+*/
 
 
 // All player routes here
@@ -83,7 +90,6 @@ router.route('/players')
         res.json({ message: 'Player created!' });
     });
 })
-// TODO: disable in deployment
 .delete(function(req, res) {
     Player.remove({}, function(err) {
         console.log("All Players deleted.");
@@ -162,6 +168,8 @@ router.route('/gameEvents')
  */
 router.route('/gameSummary/:filters')
 
+
+// TODO: merge this function with one below
 .get(function(req, res) {
     console.log("filters = " + req.params.filters)
     var filters = JSON.parse(req.params.filters);
@@ -205,6 +213,88 @@ router.route('/gameSummary/:filters')
             }
         }
         res.json(summary);
+    });
+});
+
+router.route('/gameEvents/summary/:groupBy/:filters')
+.get(function(req, res) {
+    
+    var filters = JSON.parse(req.params.filters);
+    var query = GameEvent.find(filters).limit(maxReturn);
+    var groupBy = req.params.groupBy;
+    
+    console.log("filters = " + filters + "  groupBy = " + groupBy)
+
+    // execute the query at a later time
+    query.exec(function (err, ge) {
+        if (err) { res.send(err); }
+
+        // make a sumamry, given the filtered data
+        var allEventTypes = {}
+        var summary = {}
+        var arrayLength = ge.length;
+
+        // populate
+        for (var i = 0; i < arrayLength; i++) {
+
+            var gameEvent = ge[i];
+            var minute = Math.floor(gameEvent.secondsIntoGame / 60);
+            var eventType = gameEvent.eventType;
+            allEventTypes[eventType] = eventType;
+            var groupKey = gameEvent[groupBy];
+
+            if (summary[groupKey] == undefined) { 
+                summary[groupKey] = {}; 
+            }
+            
+            if (summary[groupKey][minute] == undefined) { 
+                summary[groupKey][minute] = {}; 
+                summary[groupKey][minute]['minute'] = minute;
+            }
+
+            if (!(eventType in summary[groupKey][minute])) { 
+                summary[groupKey][minute][eventType] = 0;
+            }
+            else { 
+                summary[groupKey][minute][eventType]++; 
+            }
+        }
+
+        // clean up
+        for(var i in summary) {
+            for(var j in summary[i]) {
+                if (summary[i] == undefined) {
+                    summary[i] = {}; 
+                }
+                if (summary[i][j] == undefined) {
+                    summary[i][j] = {}; 
+                    summary[i][j]['minute'] = j;
+                }
+                for (var key in allEventTypes) {
+                    if (summary[i][j][key] == undefined){
+                        summary[i][j][key] = 0; 
+                    }
+                }
+            }
+        }
+
+        res.json(summary);
+    });
+});
+
+router.route('/seasons')
+.get(function(req, res) {
+    Season.find(function(err, seasons) {
+        if (err) { res.send(err); }
+        res.json(seasons);
+    });
+});
+
+router.route('/teams')
+.get(function(req, res) {
+    Team.find(function(err, teams) {
+        if (err) { res.send(err); }
+        res.json(teams);
     });
 });
 

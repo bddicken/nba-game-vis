@@ -112,20 +112,106 @@ nbadvPlotter = (function(){
         return svg;
     }
     
+    nbadvPlotter.appendSVGMultiLinePlot = function(containerSelection, allData, totalWidth, totalHeight)
+    {
+        var margin = {top: 20, right: 20, bottom: 30, left: 50};
+        var width = totalWidth - margin.left - margin.right;
+        var height = totalHeight - margin.top - margin.bottom;
+            
+        var svg = containerSelection
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // get all minutes
+        var allMins = [];
+        for (var i in allData) {
+            data = allData[i]
+            for (var j in data) {
+                minute = data[j];
+                allMins[minute.minute] = minute.minute;
+            }
+        }
+        allMins = allMins.map(function(d) { return d; });
+        
+        // get highest event count
+        var maxEventCount = 0;
+        for (var i in allData) {
+            data = allData[i]
+            for (var j in data) {
+                minute = data[j];
+                if (maxEventCount < minute.Shot)
+                { maxEventCount = minute.Shot; }
+            }
+        }
+            
+        var x = d3.scale.ordinal()
+            .domain(allMins)
+            .rangeRoundBands([0, width], .1);
+
+        var y = d3.scale.linear()
+            .domain([0, maxEventCount])
+            .range([height, 0]);
+
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
+
+        var line = d3.svg.line()
+            .interpolate("basis")
+            .x(function(d) { return x(d.minute); })
+            .y(function(d) { return y(d.Shot); });
+
+        for (var i in allData)
+        {
+            var data = $.map(allData[i],function(v){
+                return v;
+            });
+
+            svg.call(nbadvPlotter.plotX, width, height, xAxis);
+            svg.call(nbadvPlotter.plotY, width, height, yAxis);
+            
+            console.log('---');
+            console.log(data);
+            console.log('pre');
+            console.log(allMins + " " + maxEventCount);
+
+            if(data.length > 2)
+            {
+                console.log('line');
+                svg.append("path")
+                    .attr("class", "line")
+                    .attr("fill", "none")
+                    .attr("stroke", "blue")
+                    .attr("stroke-width", "1px")
+                    .attr("d", line(data));
+            }
+        }
+        return svg;
+    }
+    
     /*
      */
-    nbadvPlotter.addPlotToBodyURL = function(title, url)
+    nbadvPlotter.addPlotToBodyURL = function(title, url, plotFunction)
     {
+        console.log(url);
         d3.json(url, function(error, data) {
-            nbadvPlotter.addPlotToBody(title, data);
+            //nbadvPlotter.addPlotToBody(title, data);
+            plotFunction(title, data);
         })
         .header("Content-Type","application/json");
     }
-
+    
     /*
      * append a plot to the body
      */
-    nbadvPlotter.addPlotToBody = function(title, data)
+    nbadvPlotter.getPlotContainer = function(title)
     {
         var container = d3.select("#plots")
             .insert("div", ":first-child") // idiom for prepending in d3
@@ -149,8 +235,28 @@ nbadvPlotter = (function(){
 
         container.append("div");
 
+        return container;
+    }
+
+
+    /*
+     * append a plot to the body
+     */
+    nbadvPlotter.addPlotToBody = function(title, data)
+    {
+        var container = nbadvPlotter.getPlotContainer(title);
         nbadvPlotter.appendSVGPlot(container, data, 900, 200);
         nbadvPlotter.appendSVGLinePlot(container, data, 900, 200);
+    }
+    
+    /*
+     * append a plot to the body
+     */
+    nbadvPlotter.addMultiLinePlotToBody = function(title, data)
+    {
+        console.log(data);
+        var container = nbadvPlotter.getPlotContainer(title);
+        nbadvPlotter.appendSVGMultiLinePlot(container, data, 900, 200);
     }
 
     return nbadvPlotter;

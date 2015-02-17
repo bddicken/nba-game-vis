@@ -40,6 +40,7 @@ select {
 }
 body {
   font: 10px sans-serif;
+  font-family: 'Varela Round', 'Indie Flower', cursive;
   background-color:#eee;
   background-repeat: repeat-y;
 }

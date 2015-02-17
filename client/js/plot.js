@@ -167,6 +167,16 @@ nbadvPlotter = (function(){
             .interpolate("basis")
             .x(function(d) { return x(d.minute); })
             .y(function(d) { return y(d.Shot); });
+                
+        var focus = svg.append("g")
+            .attr("class", "focus")
+            .append("text")
+            .attr("fill", "black")
+            .attr("x", (width - 60) + "px")
+            .attr("y", (30 ) + "px")
+            .attr("font-size", "18px")
+            .attr("class", "focus-label")
+            .attr("opacity", "0.0")
 
         for (var i in allData)
         {
@@ -184,13 +194,27 @@ nbadvPlotter = (function(){
 
             if(data.length > 2)
             {
-                console.log('line');
                 svg.append("path")
+                    .attr("label", i)
                     .attr("class", "line")
                     .attr("fill", "none")
                     .attr("stroke", "blue")
-                    .attr("stroke-width", "1px")
-                    .attr("d", line(data));
+                    .attr("stroke-width", "3px")
+                    .attr("d", line(data))
+                    .on("mouseover", function() { 
+                            var label = d3.select(this).attr("label"); 
+                            d3.selectAll(".focus-label").html(label); 
+                            d3.selectAll(".focus-label")
+                                .transition()
+                                .duration(250)
+                                .attr("opacity", "1.0"); 
+                    })
+                    .on("mouseout", function() { 
+                        d3.selectAll(".focus-label")
+                            .transition()
+                            .duration(250)
+                            .attr("opacity", "0.0")
+                    })
             }
         }
         return svg;
@@ -215,11 +239,11 @@ nbadvPlotter = (function(){
     {
         var container = d3.select("#plots")
             .insert("div", ":first-child") // idiom for prepending in d3
-            .style("background", "rgba(200,200,200,1.0)")
+            .style("background", "rgba(220,220,220,1.0)")
             .style("border-style", "solid")
             .style("border-thickness", "1px")
-            .style("border-color", "#aaa")
-            .style("border-radius", "3px")
+            .style("border-color", "rgba(210,210,210,1.0)")
+            //.style("border-radius", "3px")
             .style("margin", "15px")
             .style("width","1000px")
             .attr("class", "nbaviswindow");
@@ -227,6 +251,20 @@ nbadvPlotter = (function(){
         container.append("button")
             .attr("onclick", "$(this).parent().remove();")
             .attr("style", "font-size:20px;")
+            .style("opacity", "0.3")
+            .on("mouseover", function() { 
+                    d3.select(this)
+                        .transition()
+                        .duration(250)
+                        .style("opacity", "1.0"); 
+            })
+            .on("mouseout", function() { 
+                d3.select(this)
+                    .transition()
+                    .duration(250)
+                    .style("opacity", "0.3")
+            })
+            //.attr("opacity", "0.6")
             .html("-");
 
         container.append("span")
@@ -256,7 +294,7 @@ nbadvPlotter = (function(){
     {
         console.log(data);
         var container = nbadvPlotter.getPlotContainer(title);
-        nbadvPlotter.appendSVGMultiLinePlot(container, data, 900, 200);
+        nbadvPlotter.appendSVGMultiLinePlot(container, data, 900, 400);
     }
 
     return nbadvPlotter;

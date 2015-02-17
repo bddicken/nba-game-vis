@@ -19,6 +19,10 @@
   <style  type="text/css" src="style/style.css"></style>
   <link rel="stylesheet" type="text/css" href="style/style.css">
 
+  <!-- fonts -->
+  <link href='http://fonts.googleapis.com/css?family=Indie+Flower' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Varela+Round' rel='stylesheet' type='text/css'>
+
 </head>
 <body>
 
@@ -88,18 +92,17 @@
 
 <script>
 
-filters = [
-    "{\"player\":\"James\"}",
-    "{\"player\":\"Wade\"}",
-    "{\"player\":\"Bosh\"}",
-];
-for (var i in filters)
-{
+    filter1 = "{\"player\":\"James\"}";
     nbadvPlotter.addPlotToBodyURL(
-        "plot from URL \"" + filters[i]+ "\"", 
-        nbadvURLs.gameSummaryURL + filters[i],
+        filter1, 
+        nbadvURLs.gameSummaryURL + filter1,
         nbadvPlotter.addPlotToBody);
-}
+    
+    filter2 = "{\"team\":\"PHX\"}";
+    nbadvPlotter.addPlotToBodyURL(
+        "" + filter2, 
+        nbadvURLs.summaryPlayerGrouping + filter2,
+        nbadvPlotter.addMultiLinePlotToBody);
 
 var stringSort = function(data, getKey) {
     sortedData = data.sort(function(lhs,rhs){

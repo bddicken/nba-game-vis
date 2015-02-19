@@ -21,7 +21,17 @@ nbadvPlotter = (function(){
             .text("#");
     }
     
-    nbadvPlotter.appendSVGPlot = function(containerSelection, data, totalWidth, totalHeight)
+    nbadvPlotter.getFirstValue = function (d) {
+        var kk = Object.keys(d).sort();
+        return d[kk[0]];
+    }
+        
+    nbadvPlotter.getFirstKey = function (d) {
+        var kk = Object.keys(d).sort();
+        return kk[0];
+    }
+    
+    nbadvPlotter.appendSVGPlot = function(containerSelection, data, dimension, totalWidth, totalHeight)
     {
         var margin = {top: 20, right: 20, bottom: 30, left: 50};
         var width = totalWidth - margin.left - margin.right;
@@ -32,7 +42,7 @@ nbadvPlotter = (function(){
             .rangeRoundBands([0, width], .1);
 
         var y = d3.scale.linear()
-            .domain([0, d3.max(data, function(d) { return d.Shot; })])
+            .domain([0, d3.max(data, function(d) { return d[dimension]; })])
             .range([height, 0]);
 
         var xAxis = d3.svg.axis()
@@ -59,13 +69,13 @@ nbadvPlotter = (function(){
             .attr("class", "bar")
             .attr("x",          function(d) { return x(d.minute); })
             .attr("width",      x.rangeBand())
-            .attr("y",          function(d) { return y(d.Shot); })
-            .attr("height",     function(d) { return height - y(d.Shot); });
+            .attr("y",          function(d) { return y(d[dimension]); })
+            .attr("height",     function(d) { return height - y(d[dimension]); });
 
         return svg;
     }
         
-    nbadvPlotter.appendSVGLinePlot = function(containerSelection, data, totalWidth, totalHeight)
+    nbadvPlotter.appendSVGLinePlot = function(containerSelection, data, dimension, totalWidth, totalHeight)
     {
         var margin = {top: 20, right: 20, bottom: 30, left: 50};
         var width = totalWidth - margin.left - margin.right;
@@ -76,7 +86,7 @@ nbadvPlotter = (function(){
             .rangeRoundBands([0, width], .1);
 
         var y = d3.scale.linear()
-            .domain([0, d3.max(data, function(d) { return d.Shot; })])
+            .domain([0, d3.max(data, function(d) { return d[dimension]; })])
             .range([height, 0]);
 
         var xAxis = d3.svg.axis()
@@ -90,7 +100,7 @@ nbadvPlotter = (function(){
         var line = d3.svg.line()
             .interpolate("basis")
             .x(function(d) { return x(d.minute); })
-            .y(function(d) { return y(d.Shot); });
+            .y(function(d) { return y(d[dimension]); });
 
         var svg = containerSelection
             .append("svg")
@@ -112,6 +122,7 @@ nbadvPlotter = (function(){
         return svg;
     }
     
+    
     nbadvPlotter.appendSVGMultiLinePlot = function(containerSelection, allData, dimension, totalWidth, totalHeight)
     {
         var margin = {top: 20, right: 20, bottom: 30, left: 50};
@@ -120,6 +131,7 @@ nbadvPlotter = (function(){
             
         var svg = containerSelection
             .append("svg")
+            .attr("class", "svg-mutiline-plot")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
@@ -128,10 +140,13 @@ nbadvPlotter = (function(){
         // get all minutes
         var allMins = [];
         for (var i in allData) {
-            data = allData[i]
-            for (var j in data) {
-                minute = data[j];
-                allMins[minute.minute] = minute.minute;
+            ddata = allData[i]
+            for (var k in ddata) {
+                data = ddata[k]
+                for (var j in data) {
+                    minute = data[j];
+                    allMins[minute.minute] = minute.minute;
+                }
             }
         }
         allMins = allMins.map(function(d) { return d; });
@@ -139,14 +154,17 @@ nbadvPlotter = (function(){
         // get highest event count
         var maxEventCount = 0;
         for (var i in allData) {
-            data = allData[i]
-            for (var j in data) {
-                minute = data[j];
-                if (maxEventCount < minute[dimension])
-                { maxEventCount = minute[dimension]; }
+            ddata = allData[i]
+            for (var k in ddata) {
+                data = ddata[k]
+                for (var j in data) {
+                    minute = data[j];
+                    if (maxEventCount < minute[dimension])
+                    { maxEventCount = minute[dimension]; }
+                }
             }
         }
-            
+
         var x = d3.scale.ordinal()
             .domain(allMins)
             .rangeRoundBands([0, width], .1);
@@ -165,9 +183,13 @@ nbadvPlotter = (function(){
 
         var line = d3.svg.line()
             .interpolate("basis")
-            .x(function(d) { return Math.ceil(x(d.minute)); })
-            .y(function(d) { return Math.ceil(y(d[dimension]+1)); });
-                
+            .x(function(d, i) { 
+                return Math.ceil(x(d.minute));
+            })
+            .y(function(d, i) { 
+                return Math.ceil(y(d[dimension] + 1));
+            });
+        
         var focus = svg.append("g")
             .attr("class", "focus")
             .append("text")
@@ -182,43 +204,34 @@ nbadvPlotter = (function(){
 
         svg.call(nbadvPlotter.plotX, width, height, xAxis);
         svg.call(nbadvPlotter.plotY, width, height, yAxis);
+            console.log(allData);
+       
+        var data = allData;
 
-        for (var i in allData)
-        {
-            var data = $.map(allData[i],function(v){
-                return v;
+        svg.selectAll("panepath")
+            .data(data).enter()
+          .append("path")
+            .attr("label", function (d, i) { return nbadvPlotter.getFirstKey(data[i]); })
+            .attr("class", "multi-line")
+            .attr("fill", "none")
+            .attr("stroke", function(d, i) { var el = nbadvPlotter.getFirstKey(data[i]); return cColor(el); } )
+            .attr("stroke-width", "3px")
+            .attr("d", function(d) { return line(nbadvPlotter.getFirstValue(d)); })
+            .on("mouseover", function() { 
+                    var label = d3.select(this).attr("label"); 
+                    d3.selectAll(".focus-label").html(label); 
+                    d3.selectAll(".focus-label")
+                        .transition()
+                        .duration(250)
+                        .attr("opacity", "1.0"); 
+            })
+            .on("mouseout", function() { 
+                d3.selectAll(".focus-label")
+                    .transition()
+                    .duration(250)
+                    .attr("opacity", "0.0")
             });
             
-            console.log('---');
-            console.log(data);
-            console.log('pre');
-            console.log(allMins + " " + maxEventCount);
-
-            if(data.length >= 2)
-            {
-                svg.append("path")
-                    .attr("label", i)
-                    .attr("class", "multi-line")
-                    .attr("fill", "none")
-                    .attr("stroke", cColor(i))
-                    .attr("stroke-width", "4px")
-                    .attr("d", line(data))
-                    .on("mouseover", function() { 
-                            var label = d3.select(this).attr("label"); 
-                            d3.selectAll(".focus-label").html(label); 
-                            d3.selectAll(".focus-label")
-                                .transition()
-                                .duration(250)
-                                .attr("opacity", "1.0"); 
-                    })
-                    .on("mouseout", function() { 
-                        d3.selectAll(".focus-label")
-                            .transition()
-                            .duration(250)
-                            .attr("opacity", "0.0")
-                    })
-            }
-        }
         return svg;
     }
     
@@ -285,8 +298,8 @@ nbadvPlotter = (function(){
     nbadvPlotter.addPlotToBody = function(title, data, dimension)
     {
         var container = nbadvPlotter.getPlotContainer(title);
-        nbadvPlotter.appendSVGPlot(container, data, 1000, 200);
-        nbadvPlotter.appendSVGLinePlot(container, data, 1000, 200);
+        nbadvPlotter.appendSVGPlot(container, data, dimension, 1000, 200);
+        nbadvPlotter.appendSVGLinePlot(container, data, dimension, 1000, 200);
     }
     
     /*

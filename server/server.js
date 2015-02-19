@@ -252,6 +252,7 @@ router.route('/gameEvents/summary/:groupBy/:filters')
         var allEventTypes = {}
         var summary = {}
         var arrayLength = ge.length;
+        var maxMin = 0;
 
         // populate
         for (var i = 0; i < arrayLength; i++) {
@@ -261,9 +262,11 @@ router.route('/gameEvents/summary/:groupBy/:filters')
             var eventType = gameEvent.eventType;
             allEventTypes[eventType] = eventType;
             var groupKey = gameEvent[groupBy];
+            
+            if (minute < 0) { continue; }
 
             if (summary[groupKey] == undefined) { 
-                summary[groupKey] = {}; 
+                summary[groupKey] = []; 
             }
             
             if (summary[groupKey][minute] == undefined) { 
@@ -277,13 +280,14 @@ router.route('/gameEvents/summary/:groupBy/:filters')
             else { 
                 summary[groupKey][minute][eventType]++; 
             }
+            maxMin = maxMin < minute ? minute : maxMin;
         }
 
         // clean up
         for(var i in summary) {
-            for(var j in summary[i]) {
+            for(var j = 0 ; j < maxMin ; j++) {
                 if (summary[i] == undefined) {
-                    summary[i] = {}; 
+                    summary[i] = []; 
                 }
                 if (summary[i][j] == undefined) {
                     summary[i][j] = {}; 
@@ -296,8 +300,17 @@ router.route('/gameEvents/summary/:groupBy/:filters')
                 }
             }
         }
+        
+        //res.json(summary);
 
-        res.json(summary);
+        summaryArray = [];
+        for (var i in summary) {
+            element = {}
+            element[i] = summary[i];
+            summaryArray.push(element);
+        }
+        res.json(summaryArray);
+
     });
 });
 

@@ -147,6 +147,25 @@ router.route('/gameEvents')
     });
 });
 
+router.route('/eventTypes')
+.get(function(req, res) {
+    GameEvent.find().limit(2000).exec(function(err, gameEvents) {
+        if (err) { res.send(err); }
+        var typesArr = [];
+        var typesMap = [];
+        // TODO: make mre efficient by pre-computing
+        for (var i in gameEvents) {
+            var type = gameEvents[i].eventType;
+            if (typesMap[type] == undefined)
+            {
+                typesMap[type] = type;
+                typesArr.push(type);
+            }
+        }
+        res.json(typesArr);
+    });
+})
+
 // gameSummary
 
 /**

@@ -112,7 +112,7 @@ nbadvPlotter = (function(){
         return svg;
     }
     
-    nbadvPlotter.appendSVGMultiLinePlot = function(containerSelection, allData, totalWidth, totalHeight)
+    nbadvPlotter.appendSVGMultiLinePlot = function(containerSelection, allData, dimension, totalWidth, totalHeight)
     {
         var margin = {top: 20, right: 20, bottom: 30, left: 50};
         var width = totalWidth - margin.left - margin.right;
@@ -142,8 +142,8 @@ nbadvPlotter = (function(){
             data = allData[i]
             for (var j in data) {
                 minute = data[j];
-                if (maxEventCount < minute.Shot)
-                { maxEventCount = minute.Shot; }
+                if (maxEventCount < minute[dimension])
+                { maxEventCount = minute[dimension]; }
             }
         }
             
@@ -152,7 +152,7 @@ nbadvPlotter = (function(){
             .rangeRoundBands([0, width], .1);
 
         var y = d3.scale.linear()
-            .domain([0, maxEventCount])
+            .domain([1, maxEventCount])
             .range([height, 0]);
 
         var xAxis = d3.svg.axis()
@@ -165,8 +165,8 @@ nbadvPlotter = (function(){
 
         var line = d3.svg.line()
             .interpolate("basis")
-            .x(function(d) { return x(d.minute); })
-            .y(function(d) { return y(d.Shot); });
+            .x(function(d) { return Math.ceil(x(d.minute)); })
+            .y(function(d) { return Math.ceil(y(d[dimension]+1)); });
                 
         var focus = svg.append("g")
             .attr("class", "focus")
@@ -177,29 +177,31 @@ nbadvPlotter = (function(){
             .attr("font-size", "18px")
             .attr("class", "focus-label")
             .attr("opacity", "0.0")
+        
+        var cColor = d3.scale.category10();
+
+        svg.call(nbadvPlotter.plotX, width, height, xAxis);
+        svg.call(nbadvPlotter.plotY, width, height, yAxis);
 
         for (var i in allData)
         {
             var data = $.map(allData[i],function(v){
                 return v;
             });
-
-            svg.call(nbadvPlotter.plotX, width, height, xAxis);
-            svg.call(nbadvPlotter.plotY, width, height, yAxis);
             
             console.log('---');
             console.log(data);
             console.log('pre');
             console.log(allMins + " " + maxEventCount);
 
-            if(data.length > 2)
+            if(data.length >= 2)
             {
                 svg.append("path")
                     .attr("label", i)
-                    .attr("class", "line")
+                    .attr("class", "multi-line")
                     .attr("fill", "none")
-                    .attr("stroke", "blue")
-                    .attr("stroke-width", "3px")
+                    .attr("stroke", cColor(i))
+                    .attr("stroke-width", "4px")
                     .attr("d", line(data))
                     .on("mouseover", function() { 
                             var label = d3.select(this).attr("label"); 
@@ -222,12 +224,12 @@ nbadvPlotter = (function(){
     
     /*
      */
-    nbadvPlotter.addPlotToBodyURL = function(title, url, plotFunction)
+    nbadvPlotter.addPlotToBodyURL = function(title, url, dimension, plotFunction)
     {
         console.log(url);
         d3.json(url, function(error, data) {
             //nbadvPlotter.addPlotToBody(title, data);
-            plotFunction(title, data);
+            plotFunction(title, data, dimension);
         })
         .header("Content-Type","application/json");
     }
@@ -243,9 +245,10 @@ nbadvPlotter = (function(){
             .style("border-style", "solid")
             .style("border-thickness", "1px")
             .style("border-color", "rgba(210,210,210,1.0)")
-            //.style("border-radius", "3px")
             .style("margin", "15px")
             .style("width","1000px")
+            .style("display", "block")
+            .style("margin", "auto")
             .attr("class", "nbaviswindow");
 
         container.append("button")
@@ -264,7 +267,6 @@ nbadvPlotter = (function(){
                     .duration(250)
                     .style("opacity", "0.3")
             })
-            //.attr("opacity", "0.6")
             .html("-");
 
         container.append("span")
@@ -280,21 +282,21 @@ nbadvPlotter = (function(){
     /*
      * append a plot to the body
      */
-    nbadvPlotter.addPlotToBody = function(title, data)
+    nbadvPlotter.addPlotToBody = function(title, data, dimension)
     {
         var container = nbadvPlotter.getPlotContainer(title);
-        nbadvPlotter.appendSVGPlot(container, data, 900, 200);
-        nbadvPlotter.appendSVGLinePlot(container, data, 900, 200);
+        nbadvPlotter.appendSVGPlot(container, data, 1000, 200);
+        nbadvPlotter.appendSVGLinePlot(container, data, 1000, 200);
     }
     
     /*
      * append a plot to the body
      */
-    nbadvPlotter.addMultiLinePlotToBody = function(title, data)
+    nbadvPlotter.addMultiLinePlotToBody = function(title, data, dimension)
     {
         console.log(data);
         var container = nbadvPlotter.getPlotContainer(title);
-        nbadvPlotter.appendSVGMultiLinePlot(container, data, 900, 400);
+        nbadvPlotter.appendSVGMultiLinePlot(container, data, dimension, 1000, 400);
     }
 
     return nbadvPlotter;

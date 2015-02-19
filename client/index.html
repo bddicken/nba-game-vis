@@ -25,6 +25,7 @@
 
 </head>
 <body>
+<div id="container">
 
 <h1> NBA data vis </h1>
 
@@ -58,14 +59,6 @@
       <select name="eventType" id="eventType">
         <option value="" disabled selected>Event Type</option>
         <option value="">All</option>
-        <option value="Shot">Shot</option>
-        <option value="Steal">Steal</option>
-        <option value="Rebound">Rebound</option>
-        <option value="Block">Block</option>
-        <option value="Assist">Assist</option>
-        <option value="Turnover">Turnover</option>
-        <option value="Checkin">Check in</option>
-        <option value="Checkout">Check out</option>
       </select>
       </div>
 
@@ -81,6 +74,7 @@
   </form>
   <div id="plots"></div>
 </div>
+</div>
 
 <div id="existing"></div>
 
@@ -92,16 +86,19 @@
 
 <script>
 
+/*
     filter1 = "{\"player\":\"James\"}";
     nbadvPlotter.addPlotToBodyURL(
         filter1, 
         nbadvURLs.gameSummaryURL + filter1,
         nbadvPlotter.addPlotToBody);
-    
+*/
+
     filter2 = "{\"team\":\"PHX\"}";
     nbadvPlotter.addPlotToBodyURL(
         "" + filter2, 
         nbadvURLs.summaryPlayerGrouping + filter2,
+        "Shot",
         nbadvPlotter.addMultiLinePlotToBody);
 
 var stringSort = function(data, getKey) {
@@ -140,6 +137,15 @@ $.getJSON(nbadvURLs.seasonsURL, function( data ) {
         var option = $('<option/>');
         option.attr({ 'value': item['name'] }).text(item['name']);
         $('#season').append(option);
+    });
+});
+
+$.getJSON(nbadvURLs.eventTypesURL, function( data ) {
+    sortedData = stringSort(data, function(d) { return d; });
+    $.each(data, function(i, item) {
+        var option = $('<option/>');
+        option.attr({ 'value': item }).text(item);
+        $('#eventType').append(option);
     });
 });
 

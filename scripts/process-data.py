@@ -18,7 +18,6 @@ optionsParser = argparse.ArgumentParser()
 optionsParser.add_argument('--inputDir', '-i', required=True, default='./data', help="Input dir")
 optionsParser.add_argument('--outputDir', '-o', required=True, default='./out_data', help="Output dir")
 optionsParser.add_argument('--scratchDir', '-s', required=True, default='./scratch_data', help="Scratch dir")
-optionsParser.add_argument('--season', '-n', required=True, default='./input.txt', help="Format XX-XX")
 
 args = optionsParser.parse_args()
 
@@ -27,12 +26,11 @@ def PrintOptions(self):
 
 class NBADataProcessor:
 
-    def __init__(self, iDir, sDir, oDir, sea):
+    def __init__(self, iDir, sDir, oDir):
 
         self.inputDir = iDir
         self.scratchDir = sDir
         self.outputDir = oDir
-        self.season = sea
         
         self.gameIDCounter      = 0
         self.teamIDCounter      = 0
@@ -56,6 +54,7 @@ class NBADataProcessor:
 
     def getOutputFileNamesOrDie(self):
         rootAbsPath = os.path.abspath(self.outputDir);
+        
         #'''
         self.seasonsOutputFileName = rootAbsPath + "/seasons.txt"
         self.seasonsOutputFile = open(self.seasonsOutputFileName, 'a+')
@@ -71,7 +70,6 @@ class NBADataProcessor:
 
         self.teamsOutputFileName = rootAbsPath + "/teams.txt"
         self.teamsOutputFile = open(self.teamsOutputFileName, 'a+')
-        
         #'''
 
         '''
@@ -231,7 +229,8 @@ class NBADataProcessor:
             teamID = "" 
             eventType = "" 
             specificEventType = "NA"
-            season = self.season
+            #season = self.season
+            season = self.games[gameID]['season']
 
             # parse data in/near brackets
             for token in tokens:
@@ -353,7 +352,7 @@ def processAll():
     
     generateScratchFilesOnDisk(args.inputDir, args.scratchDir)
 
-    nbadp = NBADataProcessor(args.inputDir, args.scratchDir, args.outputDir, args.season)
+    nbadp = NBADataProcessor(args.inputDir, args.scratchDir, args.outputDir)
 
     nbadp.openScratchFilesOrDie()
     nbadp.getOutputFileNamesOrDie()

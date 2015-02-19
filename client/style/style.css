@@ -1,26 +1,37 @@
 .bar {
   fill: LightSeaGreen;
 }
+
+.multi-line:hover {
+  opacity:0.4;
+  /*fill: Coral;*/
+}
+
 .bar:hover {
   fill: Coral;
 }
+
 .axis {
   font: 10px sans-serif;
 }
+
 .axis path,
 .axis line {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
 }
+
 .x.axis path {
   display: none;
 }
+
 fieldset {
   border: 0;
   margin-left:auto;
   margin-right:auto;
 }
+
 label {
   display: block;
   margin-left:auto;
@@ -28,28 +39,46 @@ label {
   margin-bottom:20px;
   font-size:20px;
 }
+
+h1 {
+  font-size:36px;
+  color:#4af;
+}
+
 select {
   width: 200px;
 }
+
 .dropdown {
   display:inline;
   margin-left:auto;
   margin-right:auto;
   margin-top:20px;
-  font-size:18x;
+  font-size:18px;
 }
+
+#container {
+  text-align:center;
+  margin-left:auto;
+  margin-right:auto;
+}
+
 body {
   font: 10px sans-serif;
   font-family: 'Varela Round', 'Indie Flower', cursive;
   background-color:#eee;
   background-repeat: repeat-y;
+  margin-left:auto;
+  margin-right:auto;
 }
+
 .axis path,
 .axis line {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
 }
+
 .area {
   fill: steelblue;
 }
@@ -59,4 +88,20 @@ body {
     overflow-y: auto;   /* prevent horizontal scrollbar */
     overflow-x: hidden; /* add padding to account for vertical scrollbar */
     z-index:1000 !important;
+    font: 'Varela Round', 'Indie Flower', cursive;
+    font-family: 'Varela Round', 'Indie Flower', cursive;
+    font-size:18px;
+    vertical-align:middle;
+}
+
+.ui-selectmenu-button {
+    font-family: 'Varela Round', 'Indie Flower', cursive;
+    font-size:18px;
+    vertical-align:middle;
+}
+
+.ui-button{
+    font-family: 'Varela Round', 'Indie Flower', cursive;
+    font-size:18px;
+    vertical-align:middle;
 }

@@ -27,10 +27,12 @@ $(function() {
                 if (value != "")
                     filters[key] = value 
             } 
+            var dimension = document.getElementById(filterKeys[3]).value;
             filtersJSON = JSON.stringify(filters);
             nbadvPlotter.addPlotToBodyURL(
                 filtersJSON, 
                 nbadvURLs.summaryPlayerGrouping + filtersJSON,
+                dimension,
                 nbadvPlotter.addMultiLinePlotToBody);
         });
     
@@ -45,10 +47,12 @@ $(function() {
                 if (value != "")
                     filters[key] = value 
             } 
+            var dimension = document.getElementById(filterKeys[3]).value;
             filtersJSON = JSON.stringify(filters);
             nbadvPlotter.addPlotToBodyURL(
                 filtersJSON, 
                 nbadvURLs.gameSummaryURL + filtersJSON,
+                dimension,
                 nbadvPlotter.addPlotToBody);
         });
 });

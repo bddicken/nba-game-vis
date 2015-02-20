@@ -57,8 +57,7 @@
       
       <div class="dropdown">
       <select name="eventType" id="eventType">
-        <option value="" disabled selected>Event Type</option>
-        <option value="">All</option>
+        <option value="Shot" disabled selected>Event Type</option>
       </select>
       </div>
 
@@ -86,20 +85,19 @@
 
 <script>
 
-/*
-    filter1 = "{\"player\":\"James\"}";
-    nbadvPlotter.addPlotToBodyURL(
-        filter1, 
-        nbadvURLs.gameSummaryURL + filter1,
-        nbadvPlotter.addPlotToBody);
-*/
+filter1 = "{\"player\":\"James\"}";
+nbadvPlotter.addPlotToBodyURL(
+    filter1, 
+    nbadvURLs.gameSummaryURL + filter1,
+    "Shot",
+    nbadvPlotter.addPlotToBody);
 
-    filter2 = "{\"team\":\"PHX\"}";
-    nbadvPlotter.addPlotToBodyURL(
-        "" + filter2, 
-        nbadvURLs.summaryPlayerGrouping + filter2,
-        "Shot",
-        nbadvPlotter.addMultiLinePlotToBody);
+filter2 = "{\"team\":\"PHX\"}";
+nbadvPlotter.addPlotToBodyURL(
+    "" + filter2, 
+    nbadvURLs.summaryPlayerGrouping + filter2,
+    "Shot",
+    nbadvPlotter.addMultiLinePlotToBody);
 
 var stringSort = function(data, getKey) {
     sortedData = data.sort(function(lhs,rhs){

@@ -30,15 +30,35 @@ nbadvPlotter = (function(){
         var kk = Object.keys(d).sort();
         return kk[0];
     }
+        
+    nbadvPlotter.makeQuarterLines = function(selection, width, height, domain, range) {
+        var xQ = d3.scale.ordinal()
+            .domain(domain)
+            .range(range);
+        var make_x_axis = function() {        
+            return d3.svg.axis()
+                .scale(xQ)
+                .orient("bottom")
+                .ticks(2);
+        }
+        return selection.append("g")         
+            .attr("class", "grid")
+            .attr("transform", "translate(0," + height + ")")
+            .call(make_x_axis()
+                .tickSize(-height, 0, 0)
+                .tickFormat("")
+            );
+    }
     
     nbadvPlotter.appendSVGPlot = function(containerSelection, data, dimension, totalWidth, totalHeight)
     {
         var margin = {top: 20, right: 20, bottom: 30, left: 50};
         var width = totalWidth - margin.left - margin.right;
         var height = totalHeight - margin.top - margin.bottom;
+        var allMins = data.map(function(d) { return d.minute; });
 
         var x = d3.scale.ordinal()
-            .domain(data.map(function(d) { return d.minute; }))
+            .domain(allMins)
             .rangeRoundBands([0, width], .1);
 
         var y = d3.scale.linear()
@@ -63,6 +83,11 @@ nbadvPlotter = (function(){
         svg.call(nbadvPlotter.plotX, width, height, xAxis);
         svg.call(nbadvPlotter.plotY, width, height, yAxis);
 
+        svg.call(nbadvPlotter.makeQuarterLines, 
+                width, height,
+                allMins,
+                [x(11),x(23),x(35),x(47)]);
+
         svg.selectAll(".bar")
             .data(data)
             .enter().append("rect")
@@ -80,9 +105,11 @@ nbadvPlotter = (function(){
         var margin = {top: 20, right: 20, bottom: 30, left: 50};
         var width = totalWidth - margin.left - margin.right;
         var height = totalHeight - margin.top - margin.bottom;
+            
+        var allMins = data.map(function(d) { return d.minute; });
 
         var x = d3.scale.ordinal()
-            .domain(data.map(function(d) { return d.minute; }))
+            .domain(allMins)
             .rangeRoundBands([0, width], .1);
 
         var y = d3.scale.linear()
@@ -111,6 +138,11 @@ nbadvPlotter = (function(){
 
         svg.call(nbadvPlotter.plotX, width, height, xAxis);
         svg.call(nbadvPlotter.plotY, width, height, yAxis);
+
+        svg.call(nbadvPlotter.makeQuarterLines, 
+                width, height,
+                allMins,
+                [x(11),x(23),x(35),x(47)]);
 
         svg.append("path")
             .attr("class", "line")
@@ -189,13 +221,13 @@ nbadvPlotter = (function(){
             .y(function(d, i) { 
                 return Math.ceil(y(d[dimension] + 1));
             });
-        
+
         var focus = svg.append("g")
             .attr("class", "focus")
             .append("text")
             .attr("fill", "black")
-            .attr("x", (width - 60) + "px")
-            .attr("y", (30 ) + "px")
+            .attr("x", (width - 120) + "px")
+            .attr("y", "0px")
             .attr("font-size", "18px")
             .attr("class", "focus-label")
             .attr("opacity", "0.0")
@@ -207,6 +239,11 @@ nbadvPlotter = (function(){
             console.log(allData);
        
         var data = allData;
+
+        svg.call(nbadvPlotter.makeQuarterLines, 
+                width, height,
+                allMins,
+                [x(11),x(23),x(35),x(47)]);
 
         svg.selectAll("panepath")
             .data(data).enter()
@@ -231,6 +268,7 @@ nbadvPlotter = (function(){
                     .duration(250)
                     .attr("opacity", "0.0")
             });
+        
             
         return svg;
     }
@@ -254,7 +292,7 @@ nbadvPlotter = (function(){
     {
         var container = d3.select("#plots")
             .insert("div", ":first-child") // idiom for prepending in d3
-            .style("background", "rgba(220,220,220,1.0)")
+            .style("background", "#fff")
             .style("border-style", "solid")
             .style("border-thickness", "1px")
             .style("border-color", "rgba(210,210,210,1.0)")
@@ -263,9 +301,17 @@ nbadvPlotter = (function(){
             .style("display", "block")
             .style("margin", "auto")
             .attr("class", "nbaviswindow");
+        
+        var titleContainer = container.append("div")
+            .attr("align", "left")
+            .style("text-align", "left")
+            .style("padding", "10px")
+            .style("display", "block")
+            .style("margin-left", "20px")
+            .style("font-size", "20px");
 
-        container.append("button")
-            .attr("onclick", "$(this).parent().remove();")
+        titleContainer.append("button")
+            .attr("onclick", "$(this).parent().parent().remove();")
             .attr("style", "font-size:20px;")
             .style("opacity", "0.3")
             .on("mouseover", function() { 
@@ -281,10 +327,12 @@ nbadvPlotter = (function(){
                     .style("opacity", "0.3")
             })
             .html("-");
-
-        container.append("span")
-            .attr("style", "font-size:20px; margin-left:20px; margin-right:20px;")
+       
+        titleContainer
+            .append("span")
+            .style("margin-left", "10px")
             .html(title);
+
 
         container.append("div");
 

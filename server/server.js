@@ -201,7 +201,7 @@ router.route('/gameSummary/:filters')
 
         // make a sumamry, given the filtered data
         var allEventTypes = {}
-        summary = []
+        var summary = []
         var arrayLength = ge.length;
         for (var i = 0; i < arrayLength; i++) {
             minute = Math.floor(ge[i].secondsIntoGame / 60);
@@ -234,6 +234,171 @@ router.route('/gameSummary/:filters')
         res.json(summary);
     });
 });
+        
+var summarizeGameEvents = function(ge, groupBy) {
+    
+    // make a sumamry, given the filtered data
+    var allEventTypes = {}
+    var summary = {}
+    var arrayLength = ge.length;
+    var maxMin = 0;
+    
+    // populate
+    for (var i = 0; i < arrayLength; i++) {
+
+        var gameEvent = ge[i];
+        var minute = Math.floor(gameEvent.secondsIntoGame / 60);
+        var eventType = gameEvent.eventType;
+        allEventTypes[eventType] = eventType;
+        var groupKey = gameEvent[groupBy];
+        
+        if (minute < 0) { continue; }
+
+        if (summary[groupKey] == undefined) { 
+            summary[groupKey] = []; 
+        }
+        
+        if (summary[groupKey][minute] == undefined) { 
+            summary[groupKey][minute] = {}; 
+            summary[groupKey][minute]['minute'] = minute;
+        }
+
+        if (!(eventType in summary[groupKey][minute])) { 
+            summary[groupKey][minute][eventType] = 0;
+        }
+        else { 
+            summary[groupKey][minute][eventType]++; 
+        }
+        maxMin = maxMin < minute ? minute : maxMin;
+    }
+
+    // clean up
+    for(var i in summary) {
+        for(var j = 0 ; j < maxMin ; j++) {
+            if (summary[i] == undefined) {
+                summary[i] = []; 
+            }
+            if (summary[i][j] == undefined) {
+                summary[i][j] = {}; 
+                summary[i][j]['minute'] = j;
+            }
+            for (var key in allEventTypes) {
+                if (summary[i][j][key] == undefined){
+                    summary[i][j][key] = 0; 
+                }
+            }
+        }
+    }
+    summaryArray = [];
+    for (var i in summary) {
+        element = {}
+        element[i] = summary[i];
+        summaryArray.push(element);
+    }
+    return summaryArray; 
+}
+
+var getMax = function(summary, eventType) {
+    var max = 0;
+    for (var name in summary) {
+        mins = summary[name]
+        for (var i in mins) {
+            min = mins[i]
+            max = (max < min[eventType]) ? min[eventType] : max; 
+        }
+    }
+    return max;
+}
+    
+var getFirstValue = function (d) {
+    var kk = Object.keys(d).sort();
+    return d[kk[0]];
+}
+    
+var getFirstKey = function (d) {
+    var kk = Object.keys(d).sort();
+    return kk[0];
+}
+
+var findSimilarSummaries = function(base, all, groupBy) {
+
+    var baseMins = getFirstValue(base);
+    var baseMax = getMax(base, groupBy);
+
+    var matches = [];
+    var arrayLength = all.length;
+
+    //console.log("base player = " + getFirstKey(base))
+
+    for (var i = 0; i < arrayLength; i++) {
+        var summary = all[i];
+        
+        //console.log("base player " + i + " = " + getFirstKey(summary))
+        
+        var compMins = getFirstValue(summary);
+        var compMax = getMax(summary, groupBy);
+        
+        var minInts = compMins.length;
+        var j = 0;
+       
+        var keep = true;
+        var offCount = 5;
+
+        var diff = .32;
+
+        while (j < minInts) {
+            var baseMinute = baseMins[j][groupBy];
+            var compMinute = compMins[j][groupBy];
+
+            var baseNorm = baseMinute/baseMax;
+            var compNorm = compMinute/compMax;
+
+            if (!(compNorm < (baseNorm+diff) &&
+                compNorm > (baseNorm-diff))) {
+                if (--offCount < 1) keep = false;
+            }
+            j++;
+        }
+
+        if (keep)
+            matches.push(summary)
+    }
+
+    return matches; 
+}
+
+router.route('/gameEvents/similar/:groupBy/:filters')
+.get(function(req, res) {
+    
+    var filters = JSON.parse(req.params.filters);
+    var query = GameEvent.find(filters).limit(maxReturn);
+    var groupBy = req.params.groupBy;
+   
+    //console.log("similar filters = " + req.params.filters)
+
+    var queryAll = GameEvent.find().limit(maxReturn);
+
+    // execute the query at a later time
+    query.exec(function (err, ge) {
+        if (err) { res.send(err); }
+
+        // get initial summary
+        var summary = summarizeGameEvents(ge, groupBy);
+
+        //console.log("base = %j", summary);
+        //console.log("basek = %j", summary[0]);
+        
+        queryAll.exec(function (err, gea) {
+            if (err) { res.send(err); }
+
+            var summaryAll = summarizeGameEvents(gea, groupBy);
+            var simSum = findSimilarSummaries(summary[0], summaryAll, 'Shot'); // Todo, make "Shot" variable
+        
+            //console.log("\n\n\nsim =\n %j \n\n\n", simSum);
+            res.json(simSum);
+        });
+    });
+});
 
 router.route('/gameEvents/summary/:groupBy/:filters')
 .get(function(req, res) {
@@ -247,70 +412,8 @@ router.route('/gameEvents/summary/:groupBy/:filters')
     // execute the query at a later time
     query.exec(function (err, ge) {
         if (err) { res.send(err); }
-
-        // make a sumamry, given the filtered data
-        var allEventTypes = {}
-        var summary = {}
-        var arrayLength = ge.length;
-        var maxMin = 0;
-
-        // populate
-        for (var i = 0; i < arrayLength; i++) {
-
-            var gameEvent = ge[i];
-            var minute = Math.floor(gameEvent.secondsIntoGame / 60);
-            var eventType = gameEvent.eventType;
-            allEventTypes[eventType] = eventType;
-            var groupKey = gameEvent[groupBy];
-            
-            if (minute < 0) { continue; }
-
-            if (summary[groupKey] == undefined) { 
-                summary[groupKey] = []; 
-            }
-            
-            if (summary[groupKey][minute] == undefined) { 
-                summary[groupKey][minute] = {}; 
-                summary[groupKey][minute]['minute'] = minute;
-            }
-
-            if (!(eventType in summary[groupKey][minute])) { 
-                summary[groupKey][minute][eventType] = 0;
-            }
-            else { 
-                summary[groupKey][minute][eventType]++; 
-            }
-            maxMin = maxMin < minute ? minute : maxMin;
-        }
-
-        // clean up
-        for(var i in summary) {
-            for(var j = 0 ; j < maxMin ; j++) {
-                if (summary[i] == undefined) {
-                    summary[i] = []; 
-                }
-                if (summary[i][j] == undefined) {
-                    summary[i][j] = {}; 
-                    summary[i][j]['minute'] = j;
-                }
-                for (var key in allEventTypes) {
-                    if (summary[i][j][key] == undefined){
-                        summary[i][j][key] = 0; 
-                    }
-                }
-            }
-        }
-        
-        //res.json(summary);
-
-        summaryArray = [];
-        for (var i in summary) {
-            element = {}
-            element[i] = summary[i];
-            summaryArray.push(element);
-        }
-        res.json(summaryArray);
-
+        var summary = summarizeGameEvents(ge, groupBy);
+        res.json(summary);
     });
 });
 

@@ -277,7 +277,7 @@ nbadvPlotter = (function(){
      */
     nbadvPlotter.addPlotToBodyURL = function(title, url, dimension, plotFunction)
     {
-        console.log(url);
+        console.log("fetching = " + url);
         d3.json(url, function(error, data) {
             //nbadvPlotter.addPlotToBody(title, data);
             plotFunction(title, data, dimension);
@@ -358,6 +358,14 @@ nbadvPlotter = (function(){
         console.log(data);
         var container = nbadvPlotter.getPlotContainer(title);
         nbadvPlotter.appendSVGMultiLinePlot(container, data, dimension, 1000, 400);
+    }
+    
+    /*
+     * append a plot to the body
+     */
+    nbadvPlotter.addSimilarPlotToBody = function(title, data, dimension)
+    {
+        nbadvPlotter.addMultiLinePlotToBody(title, data, dimension)
     }
 
     return nbadvPlotter;

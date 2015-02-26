@@ -68,6 +68,10 @@
       <div class="dropdown">
       <button id="groupedSummary" value="+ grouped">+ grouped</button>
       </div>
+      
+      <div class="dropdown">
+      <button id="similar" value="+ sim">+ sim</button>
+      </div>
 
     </fieldset>
   </form>
@@ -98,6 +102,13 @@ nbadvPlotter.addPlotToBodyURL(
     nbadvURLs.summaryPlayerGrouping + filter2,
     "Shot",
     nbadvPlotter.addMultiLinePlotToBody);
+
+filter3 = "{\"player\":\"Nash\"}";
+nbadvPlotter.addPlotToBodyURL(
+    "" + filter3, 
+    nbadvURLs.similarPlayerGrouping + filter3,
+    "Shot",
+    nbadvPlotter.addSimilarPlotToBody);
 
 var stringSort = function(data, getKey) {
     sortedData = data.sort(function(lhs,rhs){

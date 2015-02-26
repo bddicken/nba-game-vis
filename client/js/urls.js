@@ -10,5 +10,6 @@ nbadvURLs.seasonsURL = nbadvURLs.baseURLAPI + "seasons";
 nbadvURLs.eventTypesURL = nbadvURLs.baseURLAPI + "eventTypes";
 
 nbadvURLs.summaryPlayerGrouping = nbadvURLs.baseURLAPI + "gameEvents/summary/player/";
+nbadvURLs.similarPlayerGrouping = nbadvURLs.baseURLAPI + "gameEvents/similar/player/";
 
 

@@ -344,7 +344,7 @@ var findSimilarSummaries = function(base, all, groupBy) {
         var keep = true;
         var offCount = 5;
 
-        var diff = .32;
+        var diff = .33;
 
         while (j < minInts) {
             var baseMinute = baseMins[j][groupBy];
@@ -373,8 +373,11 @@ router.route('/gameEvents/similar/:groupBy/:filters')
     var filters = JSON.parse(req.params.filters);
     var query = GameEvent.find(filters).limit(maxReturn);
     var groupBy = req.params.groupBy;
-   
-    //console.log("similar filters = " + req.params.filters)
+  
+    summarizeEventType = filters.eventType; // Must define 'evetType' for this to work.
+
+    console.log("similar filters = " + req.params.filters)
+    console.log("sum = "+ summarizeEventType)
 
     var queryAll = GameEvent.find().limit(maxReturn);
 
@@ -392,7 +395,7 @@ router.route('/gameEvents/similar/:groupBy/:filters')
             if (err) { res.send(err); }
 
             var summaryAll = summarizeGameEvents(gea, groupBy);
-            var simSum = findSimilarSummaries(summary[0], summaryAll, 'Shot'); // Todo, make "Shot" variable
+            var simSum = findSimilarSummaries(summary[0], summaryAll, summarizeEventType); // Todo, make "Shot" variable
         
             //console.log("\n\n\nsim =\n %j \n\n\n", simSum);
             res.json(simSum);

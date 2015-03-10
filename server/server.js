@@ -18,6 +18,7 @@ var GameEvent = require('./app/models/gameEvent');
 var Season      = require('./app/models/season');
 var Team        = require('./app/models/team');
 var Game        = require('./app/models/game');
+var Summary     = require('./app/models/summary');
 
 var maxReturn = 100000000;
 
@@ -310,6 +311,19 @@ var getMax = function(summary, eventType) {
     return max;
 }
     
+var getMaxSumVal = function(summary, eventType) {
+    var max = 0;
+    //for (var name in summary) {
+    //    mins = summary[name]
+        mins = summary.minutes;
+        for (var i in mins) {
+            min = mins[i]
+            max = (max < min[eventType]) ? min[eventType] : max; 
+        }
+    //}
+    return max;
+}
+    
 var getFirstValue = function (d) {
     var kk = Object.keys(d).sort();
     return d[kk[0]];
@@ -321,35 +335,24 @@ var getFirstKey = function (d) {
 }
 
 var findSimilarSummaries = function(base, all, groupBy) {
-
-    var baseMins = getFirstValue(base);
-    var baseMax = getMax(base, groupBy);
-
+    var baseMins = base.minutes; 
+    var baseMax = getMaxSumVal(base, groupBy);
     var matches = [];
     var arrayLength = all.length;
 
-    //console.log("base player = " + getFirstKey(base))
-
     for (var i = 0; i < arrayLength; i++) {
         var summary = all[i];
-        
-        //console.log("base player " + i + " = " + getFirstKey(summary))
-        
-        var compMins = getFirstValue(summary);
-        var compMax = getMax(summary, groupBy);
-        
-        var minInts = compMins.length;
+        var compMins = summary.minutes; 
+        var compMax = getMaxSumVal(summary, groupBy);
+        var minInts = Math.min(baseMins.length, compMins.length);
         var j = 0;
-       
         var keep = true;
         var offCount = 5;
-
         var diff = .33;
 
         while (j < minInts) {
             var baseMinute = baseMins[j][groupBy];
             var compMinute = compMins[j][groupBy];
-
             var baseNorm = baseMinute/baseMax;
             var compNorm = compMinute/compMax;
 
@@ -367,37 +370,112 @@ var findSimilarSummaries = function(base, all, groupBy) {
     return matches; 
 }
 
-router.route('/gameEvents/similar/:groupBy/:filters')
+router.route('/gameEvents/similar/graph/:groupBy/:matchValue/:degree/:filters')
 .get(function(req, res) {
     
     var filters = JSON.parse(req.params.filters);
     var query = GameEvent.find(filters).limit(maxReturn);
     var groupBy = req.params.groupBy;
-  
-    summarizeEventType = filters.eventType; // Must define 'evetType' for this to work.
+    var degree = req.params.degree;
+    var summarizeEventType = req.params.matchValue;
+    var summariesQ = Summary.find(filters).limit(maxReturn);
+    var summariesQAll = Summary.find().limit(maxReturn);
 
-    console.log("similar filters = " + req.params.filters)
-    console.log("sum = "+ summarizeEventType)
+    //console.log("similar filters = " + req.params.filters)
+    //console.log("groupBy = "+ groupBy)
+    //console.log("mathValue = "+ summarizeEventType)
+    //console.log("degree = "+ degree)
 
-    var queryAll = GameEvent.find().limit(maxReturn);
-
-    // execute the query at a later time
-    query.exec(function (err, ge) {
+    summariesQ.exec(function (err, summariesMatch) {
         if (err) { res.send(err); }
-
-        // get initial summary
-        var summary = summarizeGameEvents(ge, groupBy);
-
-        //console.log("base = %j", summary);
-        //console.log("basek = %j", summary[0]);
-        
-        queryAll.exec(function (err, gea) {
+        summariesQAll.exec(function (err, summariesAll) {
             if (err) { res.send(err); }
+            
+            //console.log("SA[0] = "+ JSON.stringify(summariesAll[0]))
+            //console.log("SM[0] = "+ JSON.stringify(summariesMatch[0]))
+            
+            var nodeLinkMap = {}
+            var graph = {}
+            var links = []
+            var nodes = []
+            var counter = 0;
+            nodes.push({"name":filters.name, "group":0})
+            nodeLinkMap[filters.name] = counter++;
 
-            var summaryAll = summarizeGameEvents(gea, groupBy);
-            var simSum = findSimilarSummaries(summary[0], summaryAll, summarizeEventType); // Todo, make "Shot" variable
+            var simSumAll = {};
+            simSumAll[filters.name] = summariesMatch[0]; // initialize with first player
+
+            // While we still have more degrees to compute...
+            for (var i = 0; i < degree; i++)
+            {
+                for (var key in simSumAll)
+                {
+                    var match = simSumAll[key]
+                    var simSum = findSimilarSummaries(
+                        match, 
+                        summariesAll, 
+                        summarizeEventType);
+
+                   for (var key2 in simSum) 
+                   {
+                        var similarResult = simSum[key2];
+
+                        // update set of all summaries
+                        simSumAll[similarResult.name] = similarResult;
+
+                        // update node to link map
+                        if (nodeLinkMap[similarResult.name] == undefined) {
+                            nodeLinkMap[similarResult.name] = counter++;
+                            nodes[nodeLinkMap[similarResult.name]] = {"name":similarResult.name, "group":i+1}
+                        }
+                
+                        var sum = simSum[key];
+                        var edge = {}
+                        
+                        edge.source = nodeLinkMap[match.name];
+                        edge.target = nodeLinkMap[similarResult.name];
+                        edge.value = 1;
+                        links.push(edge)
+                   }
+                }
+            }
+            
+            graph.nodes = nodes;
+            graph.links = links;
         
-            //console.log("\n\n\nsim =\n %j \n\n\n", simSum);
+            res.json(graph);
+
+        });
+    });
+});
+
+router.route('/gameEvents/similar/:groupBy/:matchValue/:filters')
+.get(function(req, res) {
+    
+    var filters = JSON.parse(req.params.filters);
+    var query = GameEvent.find(filters).limit(maxReturn);
+    var groupBy = req.params.groupBy;
+    var summarizeEventType = req.params.matchValue;
+    var summariesQ = Summary.find(filters).limit(maxReturn);
+    var summariesQAll = Summary.find().limit(maxReturn);
+
+    //console.log("similar filters = " + req.params.filters)
+    //console.log("groupBy = "+ groupBy)
+    //console.log("mathValue = "+ summarizeEventType)
+
+    summariesQ.exec(function (err, summariesMatch) {
+        if (err) { res.send(err); }
+        summariesQAll.exec(function (err, summariesAll) {
+            if (err) { res.send(err); }
+            
+            //console.log("SA[0] = "+ JSON.stringify(summariesAll[0]))
+            //console.log("SM[0] = "+ JSON.stringify(summariesMatch[0]))
+
+            var simSum = findSimilarSummaries(
+                    summariesMatch[0], 
+                    summariesAll, 
+                    summarizeEventType); 
+        
             res.json(simSum);
         });
     });
@@ -405,7 +483,8 @@ router.route('/gameEvents/similar/:groupBy/:filters')
 
 router.route('/gameEvents/summary/:groupBy/:filters')
 .get(function(req, res) {
-    
+   
+    /* 
     var filters = JSON.parse(req.params.filters);
     var query = GameEvent.find(filters).limit(maxReturn);
     var groupBy = req.params.groupBy;
@@ -417,6 +496,21 @@ router.route('/gameEvents/summary/:groupBy/:filters')
         if (err) { res.send(err); }
         var summary = summarizeGameEvents(ge, groupBy);
         res.json(summary);
+    });
+    */
+
+    var filters = JSON.parse(req.params.filters);
+    var query = Summary.find(filters).limit(maxReturn);
+    var groupBy = req.params.groupBy;
+    
+    console.log("filters = " + JSON.stringify(filters) + "  groupBy = " + groupBy)
+
+    // execute the query at a later time
+    query.exec(function (err, summaries) {
+        if (err) { res.send(err); }
+        //var summary = summarizeGameEvents(ge, groupBy);
+        console.log("sum res = " + JSON.stringify(summaries));
+        res.json(summaries);
     });
 });
 

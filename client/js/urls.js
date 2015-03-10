@@ -11,5 +11,6 @@ nbadvURLs.eventTypesURL = nbadvURLs.baseURLAPI + "eventTypes";
 
 nbadvURLs.summaryPlayerGrouping = nbadvURLs.baseURLAPI + "gameEvents/summary/player/";
 nbadvURLs.similarPlayerGrouping = nbadvURLs.baseURLAPI + "gameEvents/similar/player/";
+nbadvURLs.similarPlayerGroupingGraph = nbadvURLs.baseURLAPI + "gameEvents/similar/graph/player/";
 
 

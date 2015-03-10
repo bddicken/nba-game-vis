@@ -55,18 +55,32 @@ $(function() {
                 nbadvPlotter.addPlotToBody);
         });
     
-    $( "#similar" )
+    $( "#similarPlot" )
         .button()
         .click(function( event ) {
             event.preventDefault(); // stop page redirection
             var filters = getFilters();
             var dimension = document.getElementById(filterKeys[3]).value;
-            filtersJSON = JSON.stringify(filters);
+            filtersJSON= JSON.stringify({"name":filters.player});
             nbadvPlotter.addPlotToBodyURL(
                 filtersJSON, 
-                nbadvURLs.similarPlayerGrouping + filtersJSON,
+                nbadvURLs.similarPlayerGrouping + dimension + "/" + filtersJSON,
                 dimension,
                 nbadvPlotter.addSimilarPlotToBody);
+        });
+    
+    $( "#similarGraph" )
+        .button()
+        .click(function( event ) {
+            event.preventDefault(); // stop page redirection
+            var filters = getFilters();
+            var dimension = document.getElementById(filterKeys[3]).value;
+            filtersJSON= JSON.stringify({"name":filters.player});
+            nbadvPlotter.addPlotToBodyURL(
+                filtersJSON, 
+                nbadvURLs.similarPlayerGroupingGraph + dimension + "/2/" + filtersJSON,
+                dimension,
+                nbadvPlotter.addSimilarGraphToBody);
         });
 });
 

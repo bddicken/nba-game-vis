@@ -10,6 +10,7 @@ var GameEvent   = require('./app/models/gameEvent');
 var Season      = require('./app/models/season');
 var Team        = require('./app/models/team');
 var Game        = require('./app/models/game');
+var Summary     = require('./app/models/summary');
 
 var program     = require('commander');
 var csv         = require("fast-csv");
@@ -37,6 +38,17 @@ if (
     !program.teams
    ) {
     console.log("must specify all arguments.");
+}
+
+
+var getFirstValue = function (d) {
+    var kk = Object.keys(d).sort();
+    return d[kk[0]];
+}
+    
+var getFirstKey = function (d) {
+    var kk = Object.keys(d).sort();
+    return kk[0];
 }
 
 gameEventCount = 0;
@@ -164,6 +176,7 @@ var gameEventIO = readline.createInterface({
 
 gameEventIO.on('close', function(line) {
     console.log("Done processing gameEvents."); 
+    buildSummaries();
 });
 
 gameEventIO.on('line', function(line) {
@@ -208,63 +221,96 @@ gameEventIO.on('line', function(line) {
     });
 });
 
+var summarizeGameEvents = function(ge, groupBy) {
     
-/*
-
-var processSeasons = function(data) {
-    console.log("seasons")
-}
-
-var processGames = function(data) {
-    console.log("games")
-}
-
-var processTeams = function(data) {
-    console.log("teams")
-}
-
-var processPlayers = function(data) {
-
-    return;
-
-    var playerID = data[0];
-    var name     = data[1];
-    var fullName = data[2];
+    // make a sumamry, given the filtered data
+    var allEventTypes = {}
+    var summary = {}
+    var arrayLength = ge.length;
+    var maxMin = 0;
+    var summaryArray = [];
     
-    //console.log("trying to create new player");
-
-    var player = new Player(); 
-    player.name = name;
-    player.fullName = fullName;
-    player.age = 0;
-
-    playerMap[playerID] = player;
-
-    player.save(function(err) {
-        if (err) { console.log('FAILED -> ' + err); }
-        else { 
-            console.log((playerCount++) + " player created."); 
+    // Get Max minute and all event types
+    for (var i = 0; i < arrayLength; i++) {
+        var gameEvent = ge[i];
+        var eventType = gameEvent.eventType;
+        var minute = Math.floor(gameEvent.secondsIntoGame / 60);
+        
+        allEventTypes[eventType] = eventType;
+        maxMin = maxMin < minute ? minute : maxMin;
+    }
+    
+    // Initialize empty
+    for (var i = 0; i < arrayLength; i++) {
+        var gameEvent = ge[i];
+        var groupKey = gameEvent[groupBy];
+        summary[groupKey]       = []; 
+        
+        for(var j = 0 ; j <= maxMin ; j++) {
+            summary[groupKey][j]    = {}; 
+            summary[groupKey][j]['minute'] = j;
+            for (var key in allEventTypes) {
+                summary[groupKey][j][key] = 0; 
+            }
         }
+    }
+   
+    console.log("get = " + JSON.stringify(allEventTypes));
+
+    // populate
+    for (var i = 0; i < arrayLength; i++) {
+        var gameEvent = ge[i];
+        var eventType = gameEvent.eventType;
+        var minute = Math.floor(gameEvent.secondsIntoGame / 60);
+        var groupKey = gameEvent[groupBy];
+        
+        if (minute < 0) { continue; }
+        
+        /*
+        console.log("gk=" + groupKey + "  min" + minute)
+        console.log("x1 = " + JSON.stringify(summary[groupKey]));
+        console.log("x2 = " + JSON.stringify(summary[groupKey][minute]));
+        console.log("x3 = " + JSON.stringify(summary[groupKey][minute][eventType]));
+        */
+
+        summary[groupKey][minute][eventType]++; 
+    }
+
+    // convert to array
+    for (var key in summary) {
+        element = {}
+        element[key] = summary[key];
+        summaryArray.push(element);
+    }
+
+
+    console.log("summaries count = " + summaryArray.length)
+
+    return summaryArray; 
+}
+
+var maxReturn = 99999999;
+
+var buildSummaries = function() {
+    var query = GameEvent.find().limit(maxReturn);
+    var groupBy = 'player';
+    query.exec(function (err, geAll) {
+        if (err) { res.send(err); }
+        var summaries = summarizeGameEvents(geAll, groupBy);
+        for (var i in summaries) {
+            var summary = summaries[i];
+            var s = new Summary();
+            s.name = getFirstKey(summary);
+            s.minutes = getFirstValue(summary);
+            s.save(function(err) {
+                if (err) { console.log('FAILED -> ' + err); }
+            });
+        }
+        console.log("done processing summaries");
+
+        // Cannot exit right away, because the "s.save" callbacks may not have completed.
+        // Update this to use promises, etc
+        //process.exit(code=0);
     });
 }
-
-var exit = function() {
-    process.exit(code=0);
-}
-
-
-var processAllData = function(data) {
-        console.log('loaging3')
-    processSeasons(data.seasons);
-    processGames(data.games);
-    processPlayers(data.players);
-    processTeams(data.teams);
-    processGameEvents(data.gameEvents);
-    exit();
-}
-
-var nbaData = JSON.parse(fs.readFileSync(program.dataFile, 'utf8'));
-
-processAllData(nbaData);
-*/
 

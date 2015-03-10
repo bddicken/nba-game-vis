@@ -70,7 +70,11 @@
       </div>
       
       <div class="dropdown">
-      <button id="similar" value="+ sim">+ sim</button>
+      <button id="similarPlot" value="+ sim">+ sim plot</button>
+      </div>
+      
+      <div class="dropdown">
+      <button id="similarGraph" value="+ sim">+ sim graph</button>
       </div>
 
     </fieldset>
@@ -88,27 +92,36 @@
 <script src="js/ui_callbacks.js"></script>
 
 <script>
-
 filter1 = "{\"player\":\"James\"}";
 nbadvPlotter.addPlotToBodyURL(
-    filter1, 
+    "Player summary with filters " + filter1, 
     nbadvURLs.gameSummaryURL + filter1,
     "Shot",
     nbadvPlotter.addPlotToBody);
 
+// TODO, get grouped summaries working again
+/*
 filter2 = "{\"team\":\"PHX\"}";
 nbadvPlotter.addPlotToBodyURL(
     "" + filter2, 
     nbadvURLs.summaryPlayerGrouping + filter2,
     "Shot",
     nbadvPlotter.addMultiLinePlotToBody);
+*/
 
-filter3 = "{\"player\":\"Nash\",\"eventType\":\"Shot\"}";
+filter3 = "{\"name\":\"Nash\"}";
 nbadvPlotter.addPlotToBodyURL(
-    "" + filter3, 
-    nbadvURLs.similarPlayerGrouping + filter3,
+    "player similarity plot with filters " + filter3, 
+    nbadvURLs.similarPlayerGrouping + "Shot/" + filter3,
     "Shot",
     nbadvPlotter.addSimilarPlotToBody);
+
+filter4 = "{\"name\":\"Howard\"}";
+nbadvPlotter.addPlotToBodyURL(
+    "Player similarity graph with filters " + filter4, 
+    nbadvURLs.similarPlayerGroupingGraph + "Reb/2/" + filter4,
+    "Reb",
+    nbadvPlotter.addSimilarGraphToBody);
 
 var stringSort = function(data, getKey) {
     sortedData = data.sort(function(lhs,rhs){

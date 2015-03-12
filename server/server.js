@@ -370,40 +370,101 @@ var findSimilarSummaries = function(base, all, groupBy) {
     return matches; 
 }
 
-router.route('/gameEvents/similar/graph/:groupBy/:matchValue/:degree/:filters')
+var groupSummariesByKey = function(summaries, key) {
+
+    groupedSummaries = {}
+    groupedSummariesArr = []
+
+    for (var i in summaries) {
+        var summary = summaries[i];
+        var groupKey = summary[key];
+        if (groupedSummaries[groupKey] == undefined) {
+            groupedSummaries[groupKey] = summary;
+        }
+        else {
+            groupedSummaries[groupKey] = combineSummaries(
+                groupedSummaries[groupKey], summary);
+        }
+    }
+
+    for (var k in groupedSummaries) {
+        groupedSummariesArr.push(groupedSummaries[k]);
+    }
+
+    return groupedSummariesArr; 
+}
+
+var combineSummaries = function(s1, s2) {
+    var summary = new Summary();
+    summary.player = s1.player;
+    summary.team = s1.team;
+    summary.season = s1.season;
+    
+    summary.minutes = JSON.parse(JSON.stringify(s1.minutes));
+    //console.log(JSON.stringify(s1.minutes));
+
+    var s2mins = JSON.parse(JSON.stringify(s2.minutes));
+    //console.log("\ns2m=" + JSON.stringify(s2mins));
+
+    for (var i in s2mins) {
+        var minute = s2mins[i];
+        for (var j in minute) {
+            var datum = minute[j];
+            //console.log("i,j = " + i + "," + j);
+            if (j == 'minute') {
+                summary.minutes[i][j] = datum;
+            } else {
+                summary.minutes[i][j] += datum;
+            }
+        }
+    }
+    return summary;
+}
+
+
+router.route('/gameEvents/similar/graph/:matchValue/:degree/:player/:filters')
 .get(function(req, res) {
     
     var filters = JSON.parse(req.params.filters);
-    var query = GameEvent.find(filters).limit(maxReturn);
-    var groupBy = req.params.groupBy;
+    var player = req.params.player;
     var degree = req.params.degree;
     var summarizeEventType = req.params.matchValue;
-    var summariesQ = Summary.find(filters).limit(maxReturn);
-    var summariesQAll = Summary.find().limit(maxReturn);
 
-    //console.log("similar filters = " + req.params.filters)
-    //console.log("groupBy = "+ groupBy)
+    var filtersPlayer = JSON.parse(JSON.stringify(filters));
+    filtersPlayer.player = player;
+
+    console.log("similar filters = " + JSON.stringify(filters))
+    console.log("player filters = " + JSON.stringify(filtersPlayer))
     //console.log("mathValue = "+ summarizeEventType)
     //console.log("degree = "+ degree)
+    
+    var summariesQ = Summary.find(filtersPlayer).limit(maxReturn);
+    var summariesQAll = Summary.find(filters).limit(maxReturn);
 
     summariesQ.exec(function (err, summariesMatch) {
         if (err) { res.send(err); }
         summariesQAll.exec(function (err, summariesAll) {
             if (err) { res.send(err); }
             
-            //console.log("SA[0] = "+ JSON.stringify(summariesAll[0]))
-            //console.log("SM[0] = "+ JSON.stringify(summariesMatch[0]))
+            console.log("\n\nSA size = "+ summariesAll.length)
+            console.log("\n\nSM size = "+ summariesMatch.length)
+                    
+            var summariesMatchGrouped = groupSummariesByKey(summariesMatch, "player");
+            var summariesAllGrouped = groupSummariesByKey(summariesAll, "player");
+            
+            console.log("\n\nSAG size = "+ summariesAllGrouped.length)
+            console.log("\n\nSMG size = "+ summariesMatchGrouped.length)
             
             var nodeLinkMap = {}
             var graph = {}
             var links = []
             var nodes = []
             var counter = 0;
-            nodes.push({"name":filters.name, "group":0})
-            nodeLinkMap[filters.name] = counter++;
+            nodes.push({"name":player, "group":0})
+            nodeLinkMap[player] = counter++;
 
             var simSumAll = {};
-            simSumAll[filters.name] = summariesMatch[0]; // initialize with first player
+            simSumAll[filters.player] = summariesMatchGrouped[0]; // initialize with first player
 
             // While we still have more degrees to compute...
             for (var i = 0; i < degree; i++)
@@ -413,7 +474,7 @@ router.route('/gameEvents/similar/graph/:groupBy/:matchValue/:degree/:filters')
                     var match = simSumAll[key]
                     var simSum = findSimilarSummaries(
                         match, 
-                        summariesAll, 
+                        summariesAllGrouped, 
                         summarizeEventType);
 
                    for (var key2 in simSum) 
@@ -421,19 +482,19 @@ router.route('/gameEvents/similar/graph/:groupBy/:matchValue/:degree/:filters')
                         var similarResult = simSum[key2];
 
                         // update set of all summaries
-                        simSumAll[similarResult.name] = similarResult;
+                        simSumAll[similarResult.player] = similarResult;
 
                         // update node to link map
-                        if (nodeLinkMap[similarResult.name] == undefined) {
-                            nodeLinkMap[similarResult.name] = counter++;
-                            nodes[nodeLinkMap[similarResult.name]] = {"name":similarResult.name, "group":i+1}
+                        if (nodeLinkMap[similarResult.player] == undefined) {
+                            nodeLinkMap[similarResult.player] = counter++;
+                            nodes[nodeLinkMap[similarResult.player]] = {"name":similarResult.player, "group":i+1}
                         }
                 
                         var sum = simSum[key];
                         var edge = {}
                         
-                        edge.source = nodeLinkMap[match.name];
-                        edge.target = nodeLinkMap[similarResult.name];
+                        edge.source = nodeLinkMap[match.player];
+                        edge.target = nodeLinkMap[similarResult.player];
                         edge.value = 1;
                         links.push(edge)
                    }
@@ -442,75 +503,61 @@ router.route('/gameEvents/similar/graph/:groupBy/:matchValue/:degree/:filters')
             
             graph.nodes = nodes;
             graph.links = links;
-        
+            console.log("DONE"); 
             res.json(graph);
 
         });
     });
 });
 
-router.route('/gameEvents/similar/:groupBy/:matchValue/:filters')
+router.route('/gameEvents/similar/:matchValue/:player/:filters')
 .get(function(req, res) {
     
     var filters = JSON.parse(req.params.filters);
-    var query = GameEvent.find(filters).limit(maxReturn);
-    var groupBy = req.params.groupBy;
+    var player = req.params.player;
     var summarizeEventType = req.params.matchValue;
-    var summariesQ = Summary.find(filters).limit(maxReturn);
-    var summariesQAll = Summary.find().limit(maxReturn);
-
-    //console.log("similar filters = " + req.params.filters)
-    //console.log("groupBy = "+ groupBy)
-    //console.log("mathValue = "+ summarizeEventType)
+    
+    var filtersPlayer = JSON.parse(JSON.stringify(filters));
+    filtersPlayer.player = player;
+    
+    var summariesQ = Summary.find(filtersPlayer).limit(maxReturn);
+    var summariesQAll = Summary.find(filters).limit(maxReturn);
 
     summariesQ.exec(function (err, summariesMatch) {
         if (err) { res.send(err); }
         summariesQAll.exec(function (err, summariesAll) {
             if (err) { res.send(err); }
             
-            //console.log("SA[0] = "+ JSON.stringify(summariesAll[0]))
-            //console.log("SM[0] = "+ JSON.stringify(summariesMatch[0]))
-
+            //console.log("\n\nSA size = "+ summariesAll.length)
+            //console.log("\n\nSM size = "+ summariesMatch.length)
+                    
+            var summariesMatchGrouped = groupSummariesByKey(summariesMatch, "player");
+            var summariesAllGrouped = groupSummariesByKey(summariesAll, "player");
+            
             var simSum = findSimilarSummaries(
-                    summariesMatch[0], 
-                    summariesAll, 
+                    summariesMatchGrouped[0], 
+                    summariesAllGrouped, 
                     summarizeEventType); 
-        
             res.json(simSum);
         });
     });
 });
 
-router.route('/gameEvents/summary/:groupBy/:filters')
+router.route('/gameEvents/summary/:matchValue/:filters')
 .get(function(req, res) {
    
-    /* 
-    var filters = JSON.parse(req.params.filters);
-    var query = GameEvent.find(filters).limit(maxReturn);
-    var groupBy = req.params.groupBy;
-    
-    console.log("filters = " + filters + "  groupBy = " + groupBy)
-
-    // execute the query at a later time
-    query.exec(function (err, ge) {
-        if (err) { res.send(err); }
-        var summary = summarizeGameEvents(ge, groupBy);
-        res.json(summary);
-    });
-    */
-
     var filters = JSON.parse(req.params.filters);
     var query = Summary.find(filters).limit(maxReturn);
-    var groupBy = req.params.groupBy;
-    
-    console.log("filters = " + JSON.stringify(filters) + "  groupBy = " + groupBy)
+    var matchValue = req.params.matchValue;
 
     // execute the query at a later time
     query.exec(function (err, summaries) {
         if (err) { res.send(err); }
-        //var summary = summarizeGameEvents(ge, groupBy);
         console.log("sum res = " + JSON.stringify(summaries));
-        res.json(summaries);
+        
+        var summariesGrouped = groupSummariesByKey(summaries, matchValue);
+        
+        res.json(summariesGrouped);
     });
 });
 

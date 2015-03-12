@@ -16,7 +16,7 @@ $(function() {
             event.preventDefault(); // stop page redirection
         });
 
-    var getFilters = function() {
+    var getFilters = function(deleteKeys) {
         var filters = {};
         for(var i in filterKeys) { 
             var key = filterKeys[i]
@@ -24,6 +24,12 @@ $(function() {
             if (value != "")
                 filters[key] = value 
         } 
+        console.log("filters=" + JSON.stringify(filters));
+        for(var i in deleteKeys) { 
+            var deleteKey = deleteKeys[i]
+            delete filters[deleteKey]
+        } 
+        console.log("filters=" + JSON.stringify(filters));
         return filters;
     }
     
@@ -31,12 +37,13 @@ $(function() {
         .button()
         .click(function( event ) {
             event.preventDefault(); // stop page redirection
-            var filters = getFilters();
+            var filters = getFilters(['eventType']);
             var dimension = document.getElementById(filterKeys[3]).value;
-            filtersJSON = JSON.stringify(filters);
+            var player = document.getElementById(filterKeys[1]).value;
+            filtersJSON= JSON.stringify(filters);
             nbadvPlotter.addPlotToBodyURL(
                 filtersJSON, 
-                nbadvURLs.summaryPlayerGrouping + filtersJSON,
+                nbadvURLs.summaryPlayerGrouping + "player/" + filtersJSON,
                 dimension,
                 nbadvPlotter.addMultiLinePlotToBody);
         });
@@ -45,7 +52,7 @@ $(function() {
         .button()
         .click(function( event ) {
             event.preventDefault(); // stop page redirection
-            var filters = getFilters();
+            var filters = getFilters([]);
             var dimension = document.getElementById(filterKeys[3]).value;
             filtersJSON = JSON.stringify(filters);
             nbadvPlotter.addPlotToBodyURL(
@@ -59,12 +66,13 @@ $(function() {
         .button()
         .click(function( event ) {
             event.preventDefault(); // stop page redirection
-            var filters = getFilters();
+            var filters = getFilters(['player', 'eventType']);
             var dimension = document.getElementById(filterKeys[3]).value;
-            filtersJSON= JSON.stringify({"name":filters.player});
+            var player = document.getElementById(filterKeys[1]).value;
+            filtersJSON= JSON.stringify(filters);
             nbadvPlotter.addPlotToBodyURL(
                 filtersJSON, 
-                nbadvURLs.similarPlayerGrouping + dimension + "/" + filtersJSON,
+                nbadvURLs.similarPlayerGrouping + dimension + "/" + player + "/" + filtersJSON,
                 dimension,
                 nbadvPlotter.addSimilarPlotToBody);
         });
@@ -73,12 +81,13 @@ $(function() {
         .button()
         .click(function( event ) {
             event.preventDefault(); // stop page redirection
-            var filters = getFilters();
+            var filters = getFilters(['player', 'eventType']);
             var dimension = document.getElementById(filterKeys[3]).value;
-            filtersJSON= JSON.stringify({"name":filters.player});
+            var player = document.getElementById(filterKeys[1]).value;
+            filtersJSON= JSON.stringify(filters);
             nbadvPlotter.addPlotToBodyURL(
                 filtersJSON, 
-                nbadvURLs.similarPlayerGroupingGraph + dimension + "/2/" + filtersJSON,
+                nbadvURLs.similarPlayerGroupingGraph + dimension + "/2/" + player + "/" + filtersJSON,
                 dimension,
                 nbadvPlotter.addSimilarGraphToBody);
         });

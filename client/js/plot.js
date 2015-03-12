@@ -229,9 +229,10 @@ nbadvPlotter = (function(){
         // get all minutes
         var allMins = [];
         for (var i in allData) {
-            data = allData[i].minutes
-            for (var j in data) {
-                minute = data[j];
+            var md = allData[i].minutes
+            console.log("md = " + JSON.stringify(md));
+            for (var j in md) {
+                minute = md[j];
                 allMins[minute.minute] = minute.minute;
             }
         }
@@ -288,7 +289,7 @@ nbadvPlotter = (function(){
         svg.call(nbadvPlotter.plotX, width, height, xAxis);
         svg.call(nbadvPlotter.plotY, width, height, yAxis);
         
-        //console.log(allData);
+        console.log(allData);
        
         var data = allData;
 
@@ -300,10 +301,10 @@ nbadvPlotter = (function(){
         svg.selectAll("panepath")
             .data(data).enter()
           .append("path")
-            .attr("label", function (d, i) { return data[i].name; })
+            .attr("label", function (d, i) { return data[i].player; })
             .attr("class", "multi-line")
             .attr("fill", "none")
-            .attr("stroke", function(d, i) { var el = data[i].name; return cColor(el); } )
+            .attr("stroke", function(d, i) { var el = data[i].player; return cColor(el); } )
             .attr("stroke-width", "3px")
             .attr("d", function(d) { return line(d.minutes); })
             .on("mouseover", function() { 

@@ -243,8 +243,10 @@ var summarizeGameEvents = function(ge, groupBy) {
     // Initialize empty
     for (var i = 0; i < arrayLength; i++) {
         var gameEvent = ge[i];
-        var groupKey = gameEvent[groupBy];
-        summary[groupKey]       = []; 
+        //var groupKey = gameEvent[groupBy];
+        var groupKey = gameEvent.season + "," + gameEvent.team + "," + gameEvent.player;
+        
+        summary[groupKey] = []; 
         
         for(var j = 0 ; j <= maxMin ; j++) {
             summary[groupKey][j]    = {}; 
@@ -262,7 +264,8 @@ var summarizeGameEvents = function(ge, groupBy) {
         var gameEvent = ge[i];
         var eventType = gameEvent.eventType;
         var minute = Math.floor(gameEvent.secondsIntoGame / 60);
-        var groupKey = gameEvent[groupBy];
+        //var groupKey = gameEvent[groupBy];
+        var groupKey = gameEvent.season + "," + gameEvent.team + "," + gameEvent.player;
         
         if (minute < 0) { continue; }
         
@@ -299,9 +302,16 @@ var buildSummaries = function() {
         var summaries = summarizeGameEvents(geAll, groupBy);
         for (var i in summaries) {
             var summary = summaries[i];
+            var keyData = getFirstKey(summary).split(',');
+
             var s = new Summary();
-            s.name = getFirstKey(summary);
+            //s.name = getFirstKey(summary);
             s.minutes = getFirstValue(summary);
+            s.season  = keyData[0];
+            s.team    = keyData[1];
+            s.player  = keyData[2];
+            console.log(s.season + " " + s.player + " " + s.team)
+
             s.save(function(err) {
                 if (err) { console.log('FAILED -> ' + err); }
             });

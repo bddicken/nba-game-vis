@@ -99,27 +99,31 @@ nbadvPlotter.addPlotToBodyURL(
     "Shot",
     nbadvPlotter.addPlotToBody);
 
-// TODO, get grouped summaries working again
-/*
 filter2 = "{\"team\":\"PHX\"}";
 nbadvPlotter.addPlotToBodyURL(
-    "" + filter2, 
-    nbadvURLs.summaryPlayerGrouping + filter2,
+    "Grouing player summary for PHX (Shot)",
+    nbadvURLs.summaryPlayerGrouping + "player/" + filter2,
     "Shot",
     nbadvPlotter.addMultiLinePlotToBody);
-*/
 
-filter3 = "{\"name\":\"Nash\"}";
+filter3 = "{}";
 nbadvPlotter.addPlotToBodyURL(
-    "player similarity plot with filters " + filter3, 
-    nbadvURLs.similarPlayerGrouping + "Shot/" + filter3,
+    "Similarity plot for Parker based on Shots", 
+    nbadvURLs.similarPlayerGrouping + "Shot/Parker/" + filter3,
     "Shot",
     nbadvPlotter.addSimilarPlotToBody);
 
-filter4 = "{\"name\":\"Howard\"}";
+/*
 nbadvPlotter.addPlotToBodyURL(
-    "Player similarity graph with filters " + filter4, 
-    nbadvURLs.similarPlayerGroupingGraph + "Reb/2/" + filter4,
+    "Similarity for Nash based on Shots",
+    nbadvURLs.similarPlayerGroupingGraph + "Shot/2/Nash/{}",
+    "Shot",
+    nbadvPlotter.addSimilarGraphToBody);
+*/
+
+nbadvPlotter.addPlotToBodyURL(
+    "Similarity for Howard based on Rebounds", 
+    nbadvURLs.similarPlayerGroupingGraph + "Reb/2/Howard/{}",
     "Reb",
     nbadvPlotter.addSimilarGraphToBody);
 

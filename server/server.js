@@ -150,7 +150,7 @@ router.route('/gameEvents')
 
 router.route('/eventTypes')
 .get(function(req, res) {
-    GameEvent.find().limit(2000).exec(function(err, gameEvents) {
+    GameEvent.find().limit(3000).exec(function(err, gameEvents) {
         if (err) { res.send(err); }
         var typesArr = [];
         var typesMap = [];

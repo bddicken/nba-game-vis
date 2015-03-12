@@ -87,7 +87,7 @@ $(function() {
             filtersJSON= JSON.stringify(filters);
             nbadvPlotter.addPlotToBodyURL(
                 filtersJSON, 
-                nbadvURLs.similarPlayerGroupingGraph + dimension + "/2/" + player + "/" + filtersJSON,
+                nbadvURLs.similarPlayerGroupingGraph + dimension + "/3/" + player + "/" + filtersJSON,
                 dimension,
                 nbadvPlotter.addSimilarGraphToBody);
         });

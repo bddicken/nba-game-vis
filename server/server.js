@@ -334,6 +334,49 @@ var getFirstKey = function (d) {
     return kk[0];
 }
 
+/**
+ * Find similar curves based on summed-difference.
+ */
+var findSimilarSummariesDiff = function(base, all, groupBy, threshold) {
+    var baseMins = base.minutes; 
+    var arrayLength = all.length;
+
+    var allScored = []
+
+    for (var i = 0; i < arrayLength; i++) {
+        var summary = all[i];
+        var compMins = summary.minutes; 
+        var minInts = Math.min(baseMins.length, compMins.length);
+        var j = 0;
+        var score = 0;
+
+        while (j < minInts) {
+            var baseMinute = baseMins[j][groupBy];
+            var compMinute = compMins[j][groupBy];
+            score += Math.abs(baseMinute - compMinute);
+            j++;
+        }
+        var scoreSumPair = {"score":score, "summary":summary}
+        allScored.push(scoreSumPair);
+    }
+
+    var matchesScored = allScored.sort(function(lhs,rhs){ 
+        if (lhs.score < rhs.score) { return -1; }
+        else if (lhs.score > rhs.score) { return 1; }
+        return 0;
+    });
+
+    matchesScored = matchesScored.slice(0,threshold);
+    var matches = [];
+    for (var i in matchesScored) { matches.push(matchesScored[i].summary); }
+
+    return matches; 
+}
+
+
+/**
+ * Find similar curves based on a weighted similarity metric, invented by yours truly :).
+ */
 var findSimilarSummaries = function(base, all, groupBy) {
     var baseMins = base.minutes; 
     var baseMax = getMaxSumVal(base, groupBy);
@@ -472,10 +515,13 @@ router.route('/gameEvents/similar/graph/:matchValue/:degree/:player/:filters')
                 for (var key in simSumAll)
                 {
                     var match = simSumAll[key]
-                    var simSum = findSimilarSummaries(
+                    
+                    // TODO: make similarity metric user-specifiable
+                    var simSum = findSimilarSummariesDiff(
+                    //var simSum = findSimilarSummaries(
                         match, 
                         summariesAllGrouped, 
-                        summarizeEventType);
+                        summarizeEventType, 4);
 
                    for (var key2 in simSum) 
                    {
@@ -533,11 +579,13 @@ router.route('/gameEvents/similar/:matchValue/:player/:filters')
                     
             var summariesMatchGrouped = groupSummariesByKey(summariesMatch, "player");
             var summariesAllGrouped = groupSummariesByKey(summariesAll, "player");
-            
-            var simSum = findSimilarSummaries(
+   
+            // TODO: make similarity metric user-specifiable
+            //var simSum = findSimilarSummaries(
+            var simSum = findSimilarSummariesDiff(
                     summariesMatchGrouped[0], 
                     summariesAllGrouped, 
-                    summarizeEventType); 
+                    summarizeEventType, 7); 
             res.json(simSum);
         });
     });

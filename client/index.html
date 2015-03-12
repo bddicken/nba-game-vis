@@ -113,19 +113,26 @@ nbadvPlotter.addPlotToBodyURL(
     "Shot",
     nbadvPlotter.addSimilarPlotToBody);
 
-/*
+///*
 nbadvPlotter.addPlotToBodyURL(
-    "Similarity for Nash based on Shots",
-    nbadvURLs.similarPlayerGroupingGraph + "Shot/2/Nash/{}",
+    "Similarity for Dragic based on Shots",
+    nbadvURLs.similarPlayerGroupingGraph + "Shot/3/Dragic/{}",
     "Shot",
     nbadvPlotter.addSimilarGraphToBody);
-*/
+nbadvPlotter.addPlotToBodyURL(
+    "Similarity for Nash based on Shots",
+    nbadvURLs.similarPlayerGroupingGraph + "Shot/3/Nash/{}",
+    "Shot",
+    nbadvPlotter.addSimilarGraphToBody);
+//*/
 
+/*
 nbadvPlotter.addPlotToBodyURL(
     "Similarity for Howard based on Rebounds", 
     nbadvURLs.similarPlayerGroupingGraph + "Reb/2/Howard/{}",
     "Reb",
     nbadvPlotter.addSimilarGraphToBody);
+*/
 
 var stringSort = function(data, getKey) {
     sortedData = data.sort(function(lhs,rhs){

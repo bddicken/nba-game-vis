@@ -299,6 +299,72 @@ var summarizeGameEvents = function(ge, groupBy) {
     return summaryArray; 
 }
 
+var combineSummaries = function(s1, s2) {
+    var summary = new Summary();
+    summary.player = s1.player;
+    summary.team = s1.team;
+    summary.season = s1.season;
+    
+    summary.minutes = JSON.parse(JSON.stringify(s1.minutes));
+    //console.log(JSON.stringify(s1.minutes));
+
+    var s2mins = JSON.parse(JSON.stringify(s2.minutes));
+    //console.log("\ns2m=" + JSON.stringify(s2mins));
+
+    for (var i in s2mins) {
+        var minute = s2mins[i];
+        for (var j in minute) {
+            var datum = minute[j];
+            //console.log("i,j = " + i + "," + j);
+            if (j == 'minute') {
+                summary.minutes[i][j] = datum;
+            } else {
+                summary.minutes[i][j] += datum;
+            }
+        }
+    }
+    return summary;
+}
+
+var groupSummariesByKey = function(summaries, key) {
+
+    groupedSummaries = {}
+    groupedSummariesArr = []
+
+    for (var i in summaries) {
+        var summary = summaries[i];
+        var groupKey = summary[key];
+        if (groupedSummaries[groupKey] == undefined) {
+            groupedSummaries[groupKey] = summary;
+        }
+        else {
+            groupedSummaries[groupKey] = combineSummaries(
+                groupedSummaries[groupKey], summary);
+        }
+    }
+
+    for (var k in groupedSummaries) {
+        groupedSummariesArr.push(groupedSummaries[k]);
+    }
+
+    return groupedSummariesArr; 
+}
+
+var getSummariesMatchingNames = function(summaries, names)
+{
+    var results = []
+    for (var s in summaries) {
+        summary = summaries[s];
+        for (var n in names) {
+            var name = names[n];
+            if (summary.player == name) {
+                results.push(summary);
+            }
+        }
+    }
+    return results;
+}
+
 var getMax = function(summary, eventType) {
     var max = 0;
     for (var name in summary) {
@@ -337,6 +403,24 @@ var getFirstKey = function (d) {
 /**
  * Find similar curves based on summed-difference.
  */
+var compareSummariesDiff = function(base, rhs, groupBy) {
+    var baseMins = base.minutes; 
+    var compMins = rhs.minutes; 
+    var minInts = Math.min(baseMins.length, compMins.length);
+    var j = 0;
+    var score = 0;
+    while (j < minInts) {
+        var baseMinute = baseMins[j][groupBy];
+        var compMinute = compMins[j][groupBy];
+        score += Math.abs(baseMinute - compMinute);
+        j++;
+    }
+    return score;
+}
+
+/**
+ * Find similar curves based on summed-difference.
+ */
 var findSimilarSummariesDiff = function(base, all, groupBy, threshold) {
     var baseMins = base.minutes; 
     var arrayLength = all.length;
@@ -345,6 +429,7 @@ var findSimilarSummariesDiff = function(base, all, groupBy, threshold) {
 
     for (var i = 0; i < arrayLength; i++) {
         var summary = all[i];
+        /*
         var compMins = summary.minutes; 
         var minInts = Math.min(baseMins.length, compMins.length);
         var j = 0;
@@ -356,6 +441,8 @@ var findSimilarSummariesDiff = function(base, all, groupBy, threshold) {
             score += Math.abs(baseMinute - compMinute);
             j++;
         }
+        */
+        var score = compareSummariesDiff(base, summary);
         var scoreSumPair = {"score":score, "summary":summary}
         allScored.push(scoreSumPair);
     }
@@ -413,64 +500,62 @@ var findSimilarSummaries = function(base, all, groupBy) {
     return matches; 
 }
 
-var groupSummariesByKey = function(summaries, key) {
 
-    groupedSummaries = {}
-    groupedSummariesArr = []
+router.route('/gameEvents/similar/layout/:filters')
+.get(function(req, res) {
+    var filters = JSON.parse(req.params.filters);
+    var summariesAll = Summary.find(filters).limit(maxReturn);
+    summariesAll.exec(function (err, summariesAll) {
+        if (err) { res.send(err); }
+                
+        var summariesAllGrouped = groupSummariesByKey(summariesAll, "player");
 
-    for (var i in summaries) {
-        var summary = summaries[i];
-        var groupKey = summary[key];
-        if (groupedSummaries[groupKey] == undefined) {
-            groupedSummaries[groupKey] = summary;
-        }
-        else {
-            groupedSummaries[groupKey] = combineSummaries(
-                groupedSummaries[groupKey], summary);
-        }
-    }
+        matchPlayerNames = [
+                'Dragic', 'Nash', 'James', 
+                'Durant', 'Crawford', 'Howard', 
+                'Parker', 'Thabeet', 'Samuels',
+                'Ibaka', 'Love', 'A. Miller'];
+        matchSummaries = getSummariesMatchingNames(summariesAllGrouped, matchPlayerNames);
+        //matchSummaries = summariesAllGrouped;
+        
+        //console.log("\n\nSA size = "+ summariesAll.length)
+        //console.log("\n\nSAG size = "+ summariesAllGrouped.length)
+        //console.log("\n\nMPG size = "+ matchSummaries.length)
 
-    for (var k in groupedSummaries) {
-        groupedSummariesArr.push(groupedSummaries[k]);
-    }
+        result = {}
 
-    return groupedSummariesArr; 
-}
-
-var combineSummaries = function(s1, s2) {
-    var summary = new Summary();
-    summary.player = s1.player;
-    summary.team = s1.team;
-    summary.season = s1.season;
-    
-    summary.minutes = JSON.parse(JSON.stringify(s1.minutes));
-    //console.log(JSON.stringify(s1.minutes));
-
-    var s2mins = JSON.parse(JSON.stringify(s2.minutes));
-    //console.log("\ns2m=" + JSON.stringify(s2mins));
-
-    for (var i in s2mins) {
-        var minute = s2mins[i];
-        for (var j in minute) {
-            var datum = minute[j];
-            //console.log("i,j = " + i + "," + j);
-            if (j == 'minute') {
-                summary.minutes[i][j] = datum;
-            } else {
-                summary.minutes[i][j] += datum;
+        result['words'] = [];
+        result['vecs'] = [];
+        for (var k1 in summariesAllGrouped)
+        {
+            var s1 = summariesAllGrouped[k1];
+            result['words'].push(s1.player);
+            var vector = []
+            for (var k2 in matchSummaries)
+            {
+                var s2 = summariesAllGrouped[k2];
+                // TODO add assists, probably would be helpful in classifications
+                var scoreS = compareSummariesDiff(s1, s2, 'Shot');
+                var scoreR = compareSummariesDiff(s1, s2, 'Reb');
+                var scoreT = compareSummariesDiff(s1, s2, 'TO');
+                vector.push(scoreS);
+                vector.push(scoreR);
+                vector.push(scoreT);
             }
+            result['vecs'].push(vector);
         }
-    }
-    return summary;
-}
 
+        res.json(result);
+    });
+});
 
-router.route('/gameEvents/similar/graph/:matchValue/:degree/:player/:filters')
+router.route('/gameEvents/similar/graph/:matchValue/:graphReach/:nodeDegree/:player/:filters')
 .get(function(req, res) {
     
     var filters = JSON.parse(req.params.filters);
     var player = req.params.player;
-    var degree = req.params.degree;
+    var graphReach = req.params.graphReach;
+    var nodeDegree = req.params.nodeDegree;
     var summarizeEventType = req.params.matchValue;
 
     var filtersPlayer = JSON.parse(JSON.stringify(filters));
@@ -510,7 +595,7 @@ router.route('/gameEvents/similar/graph/:matchValue/:degree/:player/:filters')
             simSumAll[filters.player] = summariesMatchGrouped[0]; // initialize with first player
 
             // While we still have more degrees to compute...
-            for (var i = 0; i < degree; i++)
+            for (var i = 0; i < graphReach; i++)
             {
                 for (var key in simSumAll)
                 {
@@ -521,7 +606,7 @@ router.route('/gameEvents/similar/graph/:matchValue/:degree/:player/:filters')
                     //var simSum = findSimilarSummaries(
                         match, 
                         summariesAllGrouped, 
-                        summarizeEventType, 4);
+                        summarizeEventType, nodeDegree);
 
                    for (var key2 in simSum) 
                    {

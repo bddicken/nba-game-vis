@@ -2,6 +2,8 @@ nbadvPlotter = (function(){
 
     var nbadvPlotter = {}
 
+    nbadvPlotter.color = d3.scale.category10();
+
     nbadvPlotter.plotX = function(selection, width, height, xAxis) {
         return selection.append("g")
             .attr("class", "x axis")
@@ -50,13 +52,84 @@ nbadvPlotter = (function(){
             );
     }
     
+    nbadvPlotter.appendVectorGraph = function(containerSelection, data, dimension, totalWidth, totalHeight) {
+        var opt = {epsilon: 15, perplexity: 6};
+        var T = new tsnejs.tSNE(opt); // create a tSNE instance
+        var Y;
+        var stepnum = 0;
+        var tx=0, ty=0;
+        var ss=1;
+        
+        var margin = {top: 20, right: 20, bottom: 30, left: 50};
+        var width = totalWidth - margin.left - margin.right;
+        var height = totalHeight - margin.top - margin.bottom;
+
+        var updateEmbedding = function() {
+            console.log("ue")
+          var Y = T.getSolution();
+          svg.selectAll('.u')
+              .data(data.words)
+              .attr("transform", function(d, i) { return "translate(" +
+                  ((Y[i][0]*20*ss + tx) + 400) + "," +
+                  ((Y[i][1]*20*ss + ty) + 400) + ")"; });
+        }
+
+        var zoomHandler = function() {
+            console.log("zh")
+          tx = d3.event.translate[0];
+          ty = d3.event.translate[1];
+          ss = d3.event.scale;
+        }
+
+        var step = function() {
+            console.log("st")
+          var cost = T.step(); 
+          $("#cost").html("iteration " + T.iter + ", cost: " + cost);
+          updateEmbedding();
+        }
+    
+        //data = j;
+        T.initDataRaw(data.vecs); // init embedding
+        setInterval(step, 0);
+
+        //var svg = containerSelection;
+
+        //$("#embed").empty();
+        //var div = d3.select("#embed");
+
+        // get min and max in each column of Y
+        var Y = T.Y;
+        
+        var svg = containerSelection.append("svg") // svg is global
+            .attr("width", width)
+            .attr("height", height);
+
+        var g = svg.selectAll(".b")
+            .data(data.words)
+            .enter().append("g")
+            .attr("class", "u");
+
+        g.append("text")
+            .attr("text-anchor", "top")
+            .attr("font-size", 12)
+            .attr("fill", "#333")
+            .text(function(d) { return d; });
+
+        var zoomListener = d3.behavior.zoom()
+            .scaleExtent([0.1, 10])
+            .center([0,0])
+            .on("zoom", zoomHandler);
+        
+        zoomListener(svg);
+
+        return svg;
+    }
+    
     nbadvPlotter.appendFDLGraph = function(containerSelection, data, dimension, totalWidth, totalHeight)
     {
         var margin = {top: 20, right: 20, bottom: 30, left: 50};
         var width = totalWidth - margin.left - margin.right;
         var height = totalHeight - margin.top - margin.bottom;
-
-        var color = d3.scale.category10();
 
         var force = d3.layout.force()
             .charge(-150)
@@ -88,7 +161,7 @@ nbadvPlotter = (function(){
             .attr("class", "node")
             .attr("r", 12)
             //.style("fill", function(d) { return "fff"; })
-            .style("fill", function(d) { return color(d.group); })
+            .style("fill", function(d) { return nbadvPlotter.color(d.group); })
             .call(force.drag);
 
         node.append("title")
@@ -283,8 +356,6 @@ nbadvPlotter = (function(){
             .attr("font-size", "18px")
             .attr("class", "focus-label")
             .attr("opacity", "0.0")
-        
-        var cColor = d3.scale.category10();
 
         svg.call(nbadvPlotter.plotX, width, height, xAxis);
         svg.call(nbadvPlotter.plotY, width, height, yAxis);
@@ -304,7 +375,7 @@ nbadvPlotter = (function(){
             .attr("label", function (d, i) { return data[i].player; })
             .attr("class", "multi-line")
             .attr("fill", "none")
-            .attr("stroke", function(d, i) { var el = data[i].player; return cColor(el); } )
+            .attr("stroke", function(d, i) { var el = data[i].player; return nbadvPlotter.color(el); } )
             .attr("stroke-width", "3px")
             .attr("d", function(d) { return line(d.minutes); })
             .on("mouseover", function() { 
@@ -428,6 +499,15 @@ nbadvPlotter = (function(){
         console.log(data);
         var container = nbadvPlotter.getPlotContainer(title);
         nbadvPlotter.appendFDLGraph(container, data, dimension, 1000, 600);
+    }
+    
+    /*
+     * append a vector graph to the body
+     */
+    nbadvPlotter.addVectorGraphToBody = function(title, data, dimension)
+    {
+        var container = nbadvPlotter.getPlotContainer(title);
+        nbadvPlotter.appendVectorGraph(container, data, dimension, 1000, 600);
     }
 
     return nbadvPlotter;

@@ -60,6 +60,35 @@
         <option value="Shot" disabled selected>Event Type</option>
       </select>
       </div>
+      
+      <div class="dropdown">
+      <select name="graphReach" id="graphReach">
+        <option value="3" disabled selected>graph Reach</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+      </select>
+      </div>
+      
+      <div class="dropdown">
+      <select name="nodeDegree" id="nodeDegree">
+        <option value="4" disabled selected>Node Degree</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+      </select>
+      </div>
+
+      <br/>
+      <br/>
 
       <div class="dropdown">
       <button id="individualSummary" value="+ indiv">+ indiv</button>
@@ -76,6 +105,10 @@
       <div class="dropdown">
       <button id="similarGraph" value="+ sim">+ sim graph</button>
       </div>
+      
+      <div class="dropdown">
+      <button id="vecGraph" value="+ vec graph">+ vec graph</button>
+      </div>
 
     </fieldset>
   </form>
@@ -87,6 +120,7 @@
 
 </body>
 
+<script src="js/tsne.js"></script>
 <script src="js/urls.js"></script>
 <script src="js/plot.js"></script>
 <script src="js/ui_callbacks.js"></script>
@@ -98,7 +132,7 @@ nbadvPlotter.addPlotToBodyURL(
     nbadvURLs.gameSummaryURL + filter1,
     "Shot",
     nbadvPlotter.addPlotToBody);
-
+/*
 filter2 = "{\"team\":\"PHX\"}";
 nbadvPlotter.addPlotToBodyURL(
     "Grouing player summary for PHX (Shot)",
@@ -113,23 +147,16 @@ nbadvPlotter.addPlotToBodyURL(
     "Shot",
     nbadvPlotter.addSimilarPlotToBody);
 
-///*
-nbadvPlotter.addPlotToBodyURL(
-    "Similarity for Dragic based on Shots",
-    nbadvURLs.similarPlayerGroupingGraph + "Shot/3/Dragic/{}",
-    "Shot",
-    nbadvPlotter.addSimilarGraphToBody);
 nbadvPlotter.addPlotToBodyURL(
     "Similarity for Nash based on Shots",
-    nbadvURLs.similarPlayerGroupingGraph + "Shot/3/Nash/{}",
+    nbadvURLs.similarPlayerGroupingGraph + "Shot/3/4/Nash/{}",
     "Shot",
     nbadvPlotter.addSimilarGraphToBody);
-//*/
-
+*/
 /*
 nbadvPlotter.addPlotToBodyURL(
     "Similarity for Howard based on Rebounds", 
-    nbadvURLs.similarPlayerGroupingGraph + "Reb/2/Howard/{}",
+    nbadvURLs.similarPlayerGroupingGraph + "Reb/2/4/Howard/{}",
     "Reb",
     nbadvPlotter.addSimilarGraphToBody);
 */
@@ -143,44 +170,21 @@ var stringSort = function(data, getKey) {
     return sortedData;
 }
 
-$.getJSON(nbadvURLs.playersURL, function( data ) {
-    console.log("player");
-    sortedData = stringSort(data, function(d) {return d.fullName; });
-    $.each(data, function(i, item) {
-        var option = $('<option/>');
-        option.attr({ 'value': item['name'] }).text(item['fullName']);
-        $('#player').append(option);
+var setupDropdown = function (url, id, valueGetter, textGetter) {
+    $.getJSON(url, function( data ) {
+        sortedData = stringSort(data, function(d) { return valueGetter(d); });
+        $.each(data, function(i, item) {
+            var option = $('<option/>');
+            option.attr({ 'value': valueGetter(item) }).text(textGetter(item));
+            $(id).append(option);
+        });
     });
-});
+}
 
-$.getJSON(nbadvURLs.teamsURL, function( data ) {
-    console.log("team");
-    sortedData = stringSort(data, function(d) {return d.name; });
-    $.each(data, function(i, item) {
-        var option = $('<option/>');
-        option.attr({ 'value': item['name'] }).text(item['name']);
-        $('#team').append(option);
-    });
-});
-
-$.getJSON(nbadvURLs.seasonsURL, function( data ) {
-    console.log("season");
-    sortedData = stringSort(data, function(d) {return d.name; });
-    $.each(data, function(i, item) {
-        var option = $('<option/>');
-        option.attr({ 'value': item['name'] }).text(item['name']);
-        $('#season').append(option);
-    });
-});
-
-$.getJSON(nbadvURLs.eventTypesURL, function( data ) {
-    sortedData = stringSort(data, function(d) { return d; });
-    $.each(data, function(i, item) {
-        var option = $('<option/>');
-        option.attr({ 'value': item }).text(item);
-        $('#eventType').append(option);
-    });
-});
+setupDropdown(nbadvURLs.playersURL, '#player', function(d){return d['name'];}, function(d){return d['fullName'];})
+setupDropdown(nbadvURLs.teamsURL, '#team', function(d){return d['name'];}, function(d){return d['name'];})
+setupDropdown(nbadvURLs.seasonsURL, '#season', function(d){return d['name'];}, function(d){return d['name'];})
+setupDropdown(nbadvURLs.eventTypesURL, '#eventType', function(d){return d;}, function(d){return d;})
 
 </script>
 

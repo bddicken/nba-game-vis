@@ -88,14 +88,8 @@ nbadvPlotter = (function(){
           updateEmbedding();
         }
     
-        //data = j;
         T.initDataRaw(data.vecs); // init embedding
         setInterval(step, 0);
-
-        //var svg = containerSelection;
-
-        //$("#embed").empty();
-        //var div = d3.select("#embed");
 
         // get min and max in each column of Y
         var Y = T.Y;

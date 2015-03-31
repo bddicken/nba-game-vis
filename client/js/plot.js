@@ -56,16 +56,16 @@ nbadvPlotter = (function(){
         var opt = {epsilon: 15, perplexity: 6};
         var T = new tsnejs.tSNE(opt); // create a tSNE instance
         var Y;
-        var stepnum = 0;
+        var stepNum = 0;
         var tx=0, ty=0;
         var ss=1;
+        var stepMax = 1000;
         
         var margin = {top: 20, right: 20, bottom: 30, left: 50};
         var width = totalWidth - margin.left - margin.right;
         var height = totalHeight - margin.top - margin.bottom;
 
         var updateEmbedding = function() {
-            console.log("ue")
           var Y = T.getSolution();
           svg.selectAll('.u')
               .data(data.words)
@@ -75,17 +75,17 @@ nbadvPlotter = (function(){
         }
 
         var zoomHandler = function() {
-            console.log("zh")
-          tx = d3.event.translate[0];
-          ty = d3.event.translate[1];
-          ss = d3.event.scale;
+            tx = d3.event.translate[0];
+            ty = d3.event.translate[1];
+            ss = d3.event.scale;
+            updateEmbedding();
         }
 
         var step = function() {
-            console.log("st")
-          var cost = T.step(); 
-          $("#cost").html("iteration " + T.iter + ", cost: " + cost);
-          updateEmbedding();
+            if (stepNum++ > stepMax) { return; }
+            var cost = T.step(); 
+            //$("#cost").html("iteration " + T.iter + ", cost: " + cost);
+            updateEmbedding();
         }
     
         T.initDataRaw(data.vecs); // init embedding

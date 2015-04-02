@@ -1,6 +1,6 @@
 nbadvURLs = {};
 
-nbadvURLs.baseURL = "http://localhost:8080/";
+nbadvURLs.baseURL = "http://benjdd.com:8080/";
 nbadvURLs.baseURLAPI = nbadvURLs.baseURL + "api/";
 nbadvURLs.gameSummaryURL = nbadvURLs.baseURLAPI + "gameSummary/";
 

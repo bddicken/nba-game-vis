@@ -44,9 +44,9 @@ $(function() {
             var filters = getFilters(['eventType', 'graphReach', 'nodeDegree']);
             var dimension = document.getElementById(filterKeys[3]).value;
             var player = document.getElementById(filterKeys[1]).value;
-            filtersJSON= JSON.stringify(filters);
+            var filtersJSON= JSON.stringify(filters);
             nbadvPlotter.addPlotToBodyURL(
-                "Individual plot with filters " + fltersJSON +
+                "Individual plot with filters " + filtersJSON +
                 " on event type " + dimension,
                 nbadvURLs.summaryPlayerGrouping + "player/" + filtersJSON,
                 dimension,
@@ -59,9 +59,9 @@ $(function() {
             event.preventDefault(); // stop page redirection
             var filters = getFilters(['graphReach', 'nodeDegree']);
             var dimension = document.getElementById(filterKeys[3]).value;
-            filtersJSON = JSON.stringify(filters);
+            var filtersJSON = JSON.stringify(filters);
             nbadvPlotter.addPlotToBodyURL(
-                "Grouped plot with filters " + fltersJSON +
+                "Grouped plot with filters " + filtersJSON +
                 " on event type " + dimension,
                 nbadvURLs.gameSummaryURL + filtersJSON,
                 dimension,
@@ -75,7 +75,7 @@ $(function() {
             var filters = getFilters(['player', 'eventType', 'graphReach', 'nodeDegree']);
             var dimension = document.getElementById(filterKeys[3]).value;
             var player = document.getElementById(filterKeys[1]).value;
-            filtersJSON= JSON.stringify(filters);
+            var filtersJSON= JSON.stringify(filters);
             nbadvPlotter.addPlotToBodyURL(
                 "Similarity plot for " + player +
                 " on event type " + dimension,
@@ -93,7 +93,7 @@ $(function() {
             var graphReach = document.getElementById(filterKeys[4]).value;
             var nodeDegree = document.getElementById(filterKeys[5]).value;
             var player = document.getElementById(filterKeys[1]).value;
-            filtersJSON= JSON.stringify(filters);
+            var filtersJSON = JSON.stringify(filters);
             nbadvPlotter.addPlotToBodyURL(
                 "Similarity graph for " + player +
                 " on event type " + dimension +

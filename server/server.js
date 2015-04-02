@@ -442,7 +442,7 @@ var findSimilarSummariesDiff = function(base, all, groupBy, threshold) {
             j++;
         }
         */
-        var score = compareSummariesDiff(base, summary);
+        var score = compareSummariesDiff(base, summary, groupBy);
         var scoreSumPair = {"score":score, "summary":summary}
         allScored.push(scoreSumPair);
     }
@@ -515,6 +515,7 @@ router.route('/gameEvents/similar/layout/:filters')
                 'Durant', 'Crawford', 'Howard', 
                 'Parker', 'Thabeet', 'Samuels',
                 'Ibaka', 'Love', 'A. Miller'];
+        
         matchSummaries = getSummariesMatchingNames(summariesAllGrouped, matchPlayerNames);
         //matchSummaries = summariesAllGrouped;
         
@@ -534,13 +535,10 @@ router.route('/gameEvents/similar/layout/:filters')
             for (var k2 in matchSummaries)
             {
                 var s2 = summariesAllGrouped[k2];
-                // TODO add assists, probably would be helpful in classifications
-                var scoreS = compareSummariesDiff(s1, s2, 'Shot');
-                var scoreR = compareSummariesDiff(s1, s2, 'Reb');
-                var scoreT = compareSummariesDiff(s1, s2, 'TO');
-                vector.push(scoreS);
-                vector.push(scoreR);
-                vector.push(scoreT);
+                vector.push(compareSummariesDiff(s1, s2, 'Assist'));
+                vector.push(compareSummariesDiff(s1, s2, 'Shot'));
+                vector.push(compareSummariesDiff(s1, s2, 'Reb'));
+                vector.push(compareSummariesDiff(s1, s2, 'TO'));
             }
             result['vecs'].push(vector);
         }

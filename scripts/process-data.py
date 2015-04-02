@@ -11,6 +11,7 @@ import argparse
 import json
 import fnmatch
 import os
+import re
 import sys
 
 optionsParser = argparse.ArgumentParser()
@@ -97,21 +98,19 @@ class NBADataProcessor:
             sys.exit(1)
     
     def printDictToFile(self, dictionary, fileHandle):
+        
+        # print headers
         for key, value in dictionary.iteritems():
-            # print JSON
-            print(json.dumps(value),file=fileHandle)
-
-            #for key2, value2 in value.iteritems():
-            #    line += str(value2) + '\t';
-            #    pass
-
-            # print TSV
-
-            #line = ''
-            #for key2, value2 in value.iteritems():
-            #    line += str(value2) + '\t';
-            #    pass
-            #print(line,file=fileHandle)
+            entries = [k for (k, v) in sorted(value.items())]
+            line = ",".join(str(item) for item in entries)
+            print(line,file=fileHandle)
+            break
+        
+        # print data
+        for key, value in dictionary.iteritems():
+            entries = [v for (k, v) in sorted(value.items())]
+            line = ",".join(str(item) for item in entries)
+            print(line,file=fileHandle)
     
     def processSeasonData(self):
 
@@ -243,6 +242,8 @@ class NBADataProcessor:
                     teamID = token.replace("[", "")
                     teamID = teamID.replace("]", "")
 
+            createAssist = False
+
             # Process gneral event info
             for token in tokens:
                 if "Substitution" in token:
@@ -261,6 +262,7 @@ class NBADataProcessor:
                     eventType = "Reb"
                     break
                 elif "Assist" in token:
+                    createAssist = True
                     eventType = "Shot(Assisted)"
                     break
                 elif "Shot" in token:
@@ -285,7 +287,28 @@ class NBADataProcessor:
                 'id': self.gameEventIDCounter    \
             }
             self.gameEvents[str(self.gameEventIDCounter)] = gameEvent
-            self.gameEventIDCounter = self.gameEventIDCounter + 1
+            self.gameEventIDCounter += 1
+
+            # create separate row for assists
+            if createAssist:
+                p = re.compile(".*(Assist:) ([^()]+)")
+                #print("here!")
+                #print("event = " + event)
+                result = p.match(event)
+                playerName = result.group(2).strip()
+                if playerName in self.players:
+                    #print("pn = " + playerName)
+                    playerID = self.players[playerName]['id']
+
+                    gameEvent['playerName'] = playerName
+                    gameEvent['playerID'] = playerID
+                    gameEvent['eventType'] = 'Assist'
+                    gameEvent['specEventType'] = ''
+                    
+                    self.gameEvents[str(self.gameEventIDCounter)] = gameEvent
+                    self.gameEventIDCounter += 1
+                else:
+                    print("WARNING: failed to lookup player when making assist event")
 
     def saveAllData(self):
         nbaData = {                         \

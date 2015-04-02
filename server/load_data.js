@@ -29,7 +29,6 @@ program
   .option('-t, --teams <fileName>',     'teams')
   .parse(process.argv);
 
-console.log('event file:');
 if (
     !program.gameEvents ||
     !program.players    ||
@@ -58,10 +57,14 @@ var checkFinished = function(rowCount, rowType) {
         console.log("Done processing " + rowType + " elements.");
         fileCount--;
     }
+    if (fileCount == 1) {
+        buildSummaries();
+    }
     if (fileCount == 0) {
         console.log("Done processing all Files. Exiting.");
         process.exit(code=0);
     }
+
 }
 
 ///
@@ -71,32 +74,27 @@ var checkFinished = function(rowCount, rowType) {
 var playerStream = fs.createReadStream(program.players);
 var playerCount = 1;
 var playerCSVStream = csv()
-.on('end', function(line) {
+.on('end', function(data) {
     console.log("Done processing players"); 
     playerCount--;
     checkFinished(playerCount, "Player");
 })
-.on('data', function(line) {
-    raw = JSON.parse(line);
+.on('data', function(data) {
 
     var player = new Player(); 
-    player.name = raw.playerID;
-    player.fullName = raw.name;
-    player.age = raw.trueName;
+    player.name     = data[1];
+    player.fullName = data[2];
+    player.age      = 0;
     
     playerCount++;
 
     player.save(function(err) {
         if (err) { console.log('FAILED -> ' + err); }
         playerCount--;
-        checkfinished(playerCount, "player");
+        checkFinished(playerCount, "player");
     });
 });
 playerStream.pipe(playerCSVStream);
-
-///
-///
-///
 
 ///
 /// Team
@@ -105,24 +103,22 @@ playerStream.pipe(playerCSVStream);
 var teamStream = fs.createReadStream(program.teams);
 var teamCount = 1;
 var teamCSVStream = csv()
-.on('end', function(line) {
+.on('end', function(data) {
     console.log("Done processing teams"); 
     teamCount--;
     checkFinished(teamCount, "Player");
 })
-.on('data', function(line) {
-    raw = JSON.parse(line);
-
+.on('data', function(data) {
     var team = new Team(); 
-    team.name        = raw.name;
-    team.id          = raw.id;
+    team.id   = data[0];
+    team.name = data[1];
     
     teamCount++;
 
     team.save(function(err) {
         if (err) { console.log('FAILED -> ' + err); }
         teamCount--;
-        checkfinished(teamCount, "team");
+        checkFinished(teamCount, "team");
     });
 });
 teamStream.pipe(teamCSVStream);
@@ -138,24 +134,22 @@ teamStream.pipe(teamCSVStream);
 var seasonStream = fs.createReadStream(program.seasons);
 var seasonCount = 1;
 var seasonCSVStream = csv()
-.on('end', function(line) {
+.on('end', function(data) {
     console.log("Done processing seasons"); 
     seasonCount--;
     checkFinished(seasonCount, "Player");
 })
-.on('data', function(line) {
-    raw = JSON.parse(line);
-
+.on('data', function(data) {
     var season = new Season(); 
-    season.name        = raw.name;
-    season.id          = raw.id;
+    season.id   = data[0];
+    season.name = data[1];
     
     seasonCount++;
 
     season.save(function(err) {
         if (err) { console.log('FAILED -> ' + err); }
         seasonCount--;
-        checkfinished(seasonCount, "season");
+        checkFinished(seasonCount, "season");
     });
 });
 seasonStream.pipe(seasonCSVStream);
@@ -171,24 +165,28 @@ seasonStream.pipe(seasonCSVStream);
 var gameEventStream = fs.createReadStream(program.gameEvents);
 var gameEventCount = 1;
 var gameEventCSVStream = csv()
-.on('end', function(line) {
+.on('end', function(data) {
     console.log("Done processing gameEvents"); 
     gameEventCount--;
     checkFinished(gameEventCount, "Player");
 })
-.on('data', function(line) {
-    raw = JSON.parse(line);
-
+.on('data', function(data) {
     var mongoPlayerID;
-    var gameID      = raw.gameID;
-    var seqID       = raw.seqID;
-    var season      = raw.season;
-    var time        = raw.time;
-    var teamID      = raw.teamID;
-    var playerName  = raw.playerName;
-    var playerID    = raw.playerID;
-    var eventType   = raw.eventType;
-    var eventDetail = raw.eventDetail;
+    var eventType   = data[0];
+    var gameID      = data[1];
+    var playerID    = data[3];
+    var playerName  = data[4];
+    var season      = data[5];
+    var seqID       = data[6];
+    var eventDetail = data[7];
+    var teamID      = data[8];
+    var time        = data[9];
+
+    if (data.length < 10) {
+        console.log("Datum length error")
+        console.log("data = " + data)
+        return;
+    }
     
     // process time
     time = time.replace(/:/g, "");
@@ -213,7 +211,7 @@ var gameEventCSVStream = csv()
     gameEvent.save(function(err) {
         if (err) { console.log('FAILED -> ' + err); }
         gameEventCount--;
-        checkfinished(gameEventCount, "gameEvent");
+        checkFinished(gameEventCount, "gameEvent");
     });
 });
 gameEventStream.pipe(gameEventCSVStream);
@@ -229,28 +227,26 @@ gameEventStream.pipe(gameEventCSVStream);
 var gameStream = fs.createReadStream(program.games);
 var gameCount = 1;
 var gameCSVStream = csv()
-.on('end', function(line) {
+.on('end', function(data) {
     console.log("Done processing games"); 
     gameCount--;
     checkFinished(gameCount, "Player");
 })
-.on('data', function(line) {
-    raw = JSON.parse(line);
-
+.on('data', function(data) {
     var game = new Game(); 
-    game.name       = raw.name;
-    game.season     = raw.season;
-    game.homeTeam   = raw.homeTeam;
-    game.awayTeam   = raw.awayTeam;
-    game.date       = raw.date;
-    game.id         = raw.id;
+    game.awayTeam   = data[0];
+    game.date       = data[1];
+    game.homeTeam   = data[2];
+    game.id         = data[3];
+    game.name       = data[4];
+    game.season     = data[5];
 
     gameCount++;
 
     game.save(function(err) {
         if (err) { console.log('FAILED -> ' + err); }
         gameCount--;
-        checkfinished(gameCount, "game");
+        checkFinished(gameCount, "game");
     });
 });
 gameStream.pipe(gameCSVStream);
@@ -357,11 +353,10 @@ var buildSummaries = function() {
             s.save(function(err) {
                 if (err) { console.log('FAILED -> ' + err); }
                 summaryCount--;
-                checkfinished(summaryCount, "summary");
+                checkFinished(summaryCount, "summary");
             });
         }
         summaryCount--;
-        checkfinished(summaryCount, "summary");
+        checkFinished(summaryCount, "summary");
     });
 }
-

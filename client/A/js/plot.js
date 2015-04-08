@@ -63,8 +63,8 @@ nbadvPlotter = (function(){
         var stepMax = 200;
         
         var margin = {top: 10, right: 10, bottom: 10, left: 10};
-        var width = totalWidth //- margin.left - margin.right;
-        var height = totalHeight //- margin.top - margin.bottom;
+        var width = totalWidth 
+        var height = totalHeight 
         
         var x = d3.scale.linear()
             .domain([0, width])
@@ -73,53 +73,39 @@ nbadvPlotter = (function(){
             .domain([0, height])
             .range([height, 0]);
         
-        var brushCell;
         var brush = d3.svg.brush()
             .x(x)
             .y(y)
             .on("brushstart", brushstart)
             .on("brush", brushmove)
             .on("brushend", brushend);
+        
+        var brushCell;
 
-        function brushstart(p) {
+        var brushstart = function(p) {
             if (brushCell !== this) {
                 d3.select(brushCell).call(brush.clear());
-                x.domain([200,width]);
-                y.domain([200,height]);
+                //x.domain([200,width]);
+                //y.domain([200,height]);
                 brushCell = this;
             }
         }
 
-        function brushmove(p) {
-
+        var brushmove = function(p) {
             var e = brush.extent();
-
-            var b00 = e[0][0]; //* width;
-            var b01 = e[0][1]; //* width;
-            var b10 = e[1][0]; //* width;
-            var b11 = e[1][1]; //* width;
-            
-            console.log("1 2 3 4 = " + b00 + "," + b01 + "," + b10 + "," + b11);
-            console.log("e = " + e);
-
+            var b00 = e[0][0]; 
+            var b01 = e[0][1];
+            var b10 = e[1][0];
+            var b11 = e[1][1];
             svg.selectAll("text").classed("hidden", function(d, i) {
-
-                console.log("i = " + i );
-
                 var xp = ((Y[i][0]*20*ss + tx) + 400);
                 var yp = ((Y[i][1]*20*ss + ty) + 400) * (-1) + width;
-
-                //console.log("       translate(" +
-                //    ((Y[i][0]*20*ss + tx) + 400) + "," +
-                //    ((Y[i][1]*20*ss + ty) + 400) + ")");
-                console.log("xp,yp = " + xp + "," + yp);
-
                 return b00 > xp || xp > b10
                     || b01 > yp || yp > b11;
             });
         }
 
-        function brushend() {
+        var brushend = function(p) {
             if (brush.empty()) svg.selectAll(".hidden").classed("hidden", false);
         }
 
@@ -135,10 +121,6 @@ nbadvPlotter = (function(){
                   function(d,i) { 
                     return ((Y[i][1]*20*ss + ty) + 400);
                   });
-          if(stepNum >= stepMax) {
-              datapoints.call(brush);
-              console.log("brush");
-          }
         }
 
         var zoomHandler = function() {
@@ -151,7 +133,6 @@ nbadvPlotter = (function(){
         var step = function() {
             if (stepNum++ > stepMax) { return; }
             var cost = T.step(); 
-            //$("#cost").html("iteration " + T.iter + ", cost: " + cost);
             updateEmbedding();
         }
     
@@ -165,8 +146,12 @@ nbadvPlotter = (function(){
             .style("display", "inline")
             .attr("width", width)
             .attr("height", height);
+        
+        var containerGroup = svg
+            .append("g")
+            .attr("class", "cont");
 
-        var g = svg.selectAll(".b")
+        var g = containerGroup.selectAll(".b")
             .data(data.words)
             .enter().append("g")
             .attr("class", "u");
@@ -182,8 +167,33 @@ nbadvPlotter = (function(){
             .center([0,0])
             .on("zoom", zoomHandler);
         
-        //zoomListener(svg);
+        zoomListener(svg);
 
+        var zoomMode = true;
+
+        // Toggle zooming and brushing with "t"
+        document.onkeypress = function (e) {
+            e = e || window.event;
+            console.log(e.keyCode);
+            if (e.keyCode == 116) {
+                if (zoomMode) {
+                  tzl = d3.behavior.zoom()
+                      .scaleExtent([0.1, 10])
+                      .center([0,0])
+                      .on("zoom", undefined);
+                  tzl(svg);
+                  containerGroup
+                    .append("g")
+                    .attr("class", "brush")
+                    .call(brush);
+                }
+                else {
+                    containerGroup.select(".brush").remove();
+                    zoomListener(svg);
+                }
+                zoomMode = !zoomMode;
+            }
+        };
         return svg;
     }
     

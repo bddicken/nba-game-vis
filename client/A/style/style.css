@@ -12,7 +12,7 @@
 }
 
 .extent {
-  fill: #000;
+  fill: #558;
   fill-opacity: .225;
   stroke: #fff;
 }
@@ -22,7 +22,8 @@ text {
 }
 
 text.hidden {
-  fill: red !important;
+  /*fill: #ccc !important;*/
+  fill-opacity: .3 !important;
 }
 
 .axis {

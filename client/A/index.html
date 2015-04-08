@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>jQuery UI Selectmenu - Product Selection</title>
+
+  <!-- D3 -->
+  <script src="http://d3js.org/d3.v3.js"></script>
+
+  <!-- JQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  
+  <!-- JQuery UI -->
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+
+  <!-- My styling -->
+  <style  type="text/css" src="style/style.css"></style>
+  <link rel="stylesheet" type="text/css" href="style/style.css">
+
+  <!-- fonts -->
+  <link href='http://fonts.googleapis.com/css?family=Indie+Flower' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Varela+Round' rel='stylesheet' type='text/css'>
+
+</head>
+<body>
+<div id="container">
+
+<h1> NBA data vis - A </h1>
+
+<div class="demo">
+  <form action="#">
+    <fieldset>
+      
+      <div class="dropdown">
+      <select name="team" id="team">
+        <option value="" disabled selected>Team</option>
+        <option value="">All</option>
+      </select>
+      </div>
+      
+      <div class="dropdown">
+      <select name="season" id="season">
+        <option value="" disabled selected>Season</option>
+        <option value="">All</option>
+      </select>
+      </div>
+      
+      <div class="dropdown">
+      <select name="player" id="player">
+        <option value="" disabled selected>Player</option>
+        <option value="">All</option>
+        <!-- all other players will be loaded here dynamically -->
+      </select>
+      </div>
+
+      <br/>
+      <br/>
+
+    </fieldset>
+  </form>
+  
+  <span id="plots"></span>
+  
+  <span id="secondary-plots">
+  <table border="0" style="display:inline-block; vertical-align:top;">
+  <tr>
+    <td><span id="secondary-Shot"></span></td>
+  </tr>
+  <tr>
+    <td><span id="secondary-Reb"></span></td>
+  </tr>
+  <tr>
+    <td><span id="secondary-Assist"></span></td>
+  </tr>
+  <tr>
+    <td><span id="secondary-TO"></span></td>
+  </tr>
+  </table>
+  <span>
+
+</div>
+</div>
+
+<div id="existing"></div>
+
+</body>
+
+<script src="js/tsne.js"></script>
+<script src="js/urls.js"></script>
+<script src="js/plot.js"></script>
+<script src="js/ui_callbacks.js"></script>
+
+<script>
+
+/*
+updateSecondaryGraph(
+"#secondary-Shot", "Shot", {}, "Nash");
+updateSecondaryGraph(
+"#secondary-Reb", "Reb", {}, "Nash");
+updateSecondaryGraph(
+"#secondary-Assist", "Assist", {}, "Nash");
+updateSecondaryGraph(
+"#secondary-TO", "TO", {}, "Nash");
+*/
+
+updateVectorGraph();
+
+var stringSort = function(data, getKey) {
+    sortedData = data.sort(function(lhs,rhs){
+        lhss = getKey(lhs).replace(/\W/g, '').toLowerCase();
+        rhss = getKey(rhs).replace(/\W/g, '').toLowerCase();
+        return lhss.localeCompare(rhss);
+    });
+    return sortedData;
+}
+
+var setupDropdown = function (url, id, valueGetter, textGetter) {
+    $.getJSON(url, function( data ) {
+        sortedData = stringSort(data, function(d) { return valueGetter(d); });
+        $.each(data, function(i, item) {
+            var option = $('<option/>');
+            option.attr({ 'value': valueGetter(item) }).text(textGetter(item));
+            $(id).append(option);
+        });
+    });
+}
+
+setupDropdown(nbadvURLs.playersURL, '#player', function(d){return d['name'];}, function(d){return d['fullName'];})
+setupDropdown(nbadvURLs.teamsURL, '#team', function(d){return d['name'];}, function(d){return d['name'];})
+setupDropdown(nbadvURLs.seasonsURL, '#season', function(d){return d['name'];}, function(d){return d['name'];})
+
+</script>
+
+</html>
+

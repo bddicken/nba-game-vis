@@ -1,0 +1,424 @@
+
+nbadvPlotter = (function(){
+
+    var nbadvPlotter = {}
+
+    nbadvPlotter.color = d3.scale.category10();
+
+    nbadvPlotter.plotX = function(selection, width, height, xAxis) {
+        return selection.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+    }
+    
+    nbadvPlotter.plotY = function(selection, width, height, yAxis) {
+        return selection.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("#");
+    }
+    
+    nbadvPlotter.getFirstValue = function (d) {
+        var kk = Object.keys(d).sort();
+        return d[kk[0]];
+    }
+        
+    nbadvPlotter.getFirstKey = function (d) {
+        var kk = Object.keys(d).sort();
+        return kk[0];
+    }
+        
+    nbadvPlotter.makeQuarterLines = function(selection, width, height, domain, range) {
+        var xQ = d3.scale.ordinal()
+            .domain(domain)
+            .range(range);
+        var make_x_axis = function() {        
+            return d3.svg.axis()
+                .scale(xQ)
+                .orient("bottom")
+                .ticks(2);
+        }
+        return selection.append("g")         
+            .attr("class", "grid")
+            .attr("transform", "translate(0," + height + ")")
+            .call(make_x_axis()
+                .tickSize(-height, 0, 0)
+                .tickFormat("")
+            );
+    }
+    
+    nbadvPlotter.appendVectorGraph = function(containerSelection, data, dimension, totalWidth, totalHeight) {
+        var opt = {epsilon: 15, perplexity: 6};
+        var T = new tsnejs.tSNE(opt); // create a tSNE instance
+        var Y;
+        var stepNum = 0;
+        var tx=0, ty=0;
+        var ss=1;
+        var stepMax = 130;
+        
+        var margin = {top: 10, right: 10, bottom: 10, left: 10};
+        var width = totalWidth //- margin.left - margin.right;
+        var height = totalHeight //- margin.top - margin.bottom;
+        
+        var x = d3.scale.linear()
+            .domain([0, width])
+            .range([0, width]);
+        var y = d3.scale.linear()
+            .domain([0, height])
+            .range([height, 0]);
+        
+        var brush = d3.svg.brush()
+            .x(x)
+            .y(y)
+            .on("brushstart", brushstart)
+            .on("brush", brushmove)
+            .on("brushend", brushend);
+
+
+        var brushCell;
+
+        // Clear the previously-active brush, if any.
+        function brushstart(p) {
+        if (brushCell !== this) {
+          d3.select(brushCell).call(brush.clear());
+          //x.domain([0,10]);
+          //y.domain([0,10]);
+          brushCell = this;
+        }
+        }
+
+        // Highlight the selected circles.
+        function brushmove(p) {
+        var e = brush.extent();
+        var b00 = e[0][0] //* width;
+        var b01 = e[0][1] //* width;
+        var b10 = e[1][0] //* width;
+        var b11 = e[1][1] //* width;
+        console.log("1 2 3 4 = " + b00 + "," + b01 + "," + b10 + "," + b11);
+
+        console.log("e = " + e);
+
+        svg.selectAll("text").classed("hidden", function(d, i) {
+
+            /*console.log("e = " + e);
+                console.log("   d = " + d);
+              console.log("       translate(" +
+                  Y[i][0] + "," +
+                  Y[i][1] + ")");
+              console.log("       translate(" +
+                  ((Y[i][0]*20*ss + tx) + 400) + "," +
+                  ((Y[i][1]*20*ss + ty) + 400) + ")");*/
+
+          var xp = ((Y[i][0]*20*ss + tx) /*+ 400*/);
+          var yp = ((Y[i][1]*20*ss + ty) /*+ 400*/) * (-1) + width;
+
+          //console.log("xp,yp = " + xp + "," + yp);
+
+          return b00 > xp || xp > b10
+              || b01 > yp || yp > b11;
+        });
+        }
+
+        // If the brush is empty, select all circles.
+        function brushend() {
+            if (brush.empty()) svg.selectAll(".hidden").classed("hidden", false);
+        }
+
+        var updateEmbedding = function() {
+          var Y = T.getSolution();
+          var datapoints = svg.selectAll('.u')
+              .data(data.words)
+              //.attr("transform", function(d, i) { return "translate(" +
+              //    ((Y[i][0]*20*ss + tx) /*+ 400*/) + "," +
+              //    ((Y[i][1]*20*ss + ty) /*+ 400*/) + ")"; });
+              .attr("x",
+                  function(d,i) { return ((Y[i][0]*20*ss + tx) + 400); } )
+              .attr("y",
+                  function(d,i) { return ((Y[i][1]*20*ss + ty) + 400); } )
+          if(stepNum == stepMax)
+              datapoints.call(brush);
+        }
+
+        var zoomHandler = function() {
+            tx = d3.event.translate[0];
+            ty = d3.event.translate[1];
+            ss = d3.event.scale;
+            updateEmbedding();
+        }
+
+        var step = function() {
+            if (stepNum++ > stepMax) { return; }
+            var cost = T.step(); 
+            //$("#cost").html("iteration " + T.iter + ", cost: " + cost);
+            updateEmbedding();
+        }
+    
+        T.initDataRaw(data.vecs); // init embedding
+        setInterval(step, 0);
+
+        // get min and max in each column of Y
+        var Y = T.Y;
+        
+        var svg = containerSelection.append("svg") // svg is global
+            .style("display", "inline")
+            .attr("width", width)
+            .attr("height", height);
+
+        var g = svg.selectAll(".b")
+            .data(data.words)
+            .enter().append("g")
+            .attr("class", "u");
+
+        g.append("text")
+            .attr("text-anchor", "top")
+            .attr("font-size", 12)
+            .attr("fill", "#333")
+            .text(function(d) { return d; });
+
+        var zoomListener = d3.behavior.zoom()
+            .scaleExtent([0.1, 10])
+            .center([0,0])
+            .on("zoom", zoomHandler);
+        
+        //zoomListener(svg);
+
+        return svg;
+    }
+    
+    nbadvPlotter.appendSVGMultiLinePlot = function(containerSelection, allData, dimension, totalWidth, totalHeight)
+    {
+        var margin = {top: 20, right: 20, bottom: 30, left: 50};
+        var width = totalWidth - margin.left - margin.right;
+        var height = totalHeight - margin.top - margin.bottom;
+            
+        var svg = containerSelection
+            .append("svg")
+            .style("display", "inline")
+            .attr("class", "svg-mutiline-plot")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // get all minutes
+        var allMins = [];
+        for (var i in allData) {
+            var md = allData[i].minutes
+            console.log("md = " + JSON.stringify(md));
+            for (var j in md) {
+                minute = md[j];
+                allMins[minute.minute] = minute.minute;
+            }
+        }
+        allMins = allMins.map(function(d) { return d; });
+        
+        // get highest event count
+        var maxEventCount = 0;
+        for (var i in allData) {
+            data = allData[i].minutes
+            for (var j in data) {
+                minute = data[j];
+                if (maxEventCount < minute[dimension])
+                { maxEventCount = minute[dimension]; }
+            }
+        }
+
+        var x = d3.scale.ordinal()
+            .domain(allMins)
+            .rangeRoundBands([0, width], .1);
+
+        var y = d3.scale.linear()
+            .domain([1, maxEventCount])
+            .range([height, 0]);
+
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
+
+        var line = d3.svg.line()
+            .interpolate("basis")
+            .x(function(d, i) { 
+                return Math.ceil(x(d.minute));
+            })
+            .y(function(d, i) { 
+                return Math.ceil(y(d[dimension] + 1));
+            });
+
+        var focus = svg.append("g")
+            .attr("class", "focus")
+            .append("text")
+            .attr("fill", "black")
+            .attr("x", (width - 120) + "px")
+            .attr("y", "0px")
+            .attr("font-size", "18px")
+            .attr("class", "focus-label")
+            .attr("opacity", "0.0")
+
+        svg.call(nbadvPlotter.plotX, width, height, xAxis);
+        svg.call(nbadvPlotter.plotY, width, height, yAxis);
+        
+        console.log(allData);
+       
+        var data = allData;
+
+        svg.call(nbadvPlotter.makeQuarterLines, 
+                width, height,
+                allMins,
+                [x(11),x(23),x(35),x(47)]);
+
+        svg.selectAll("panepath")
+            .data(data).enter()
+          .append("path")
+            .attr("label", function (d, i) { return data[i].player; })
+            .attr("class", "multi-line")
+            .attr("fill", "none")
+            .attr("stroke", function(d, i) { var el = data[i].player; return nbadvPlotter.color(el); } )
+            .attr("stroke-width", "3px")
+            .attr("d", function(d) { return line(d.minutes); })
+            .on("mouseover", function() { 
+                    var label = d3.select(this).attr("label"); 
+                    d3.selectAll(".focus-label").html(label); 
+                    d3.selectAll(".focus-label")
+                        .transition()
+                        .duration(250)
+                        .attr("opacity", "1.0"); 
+            })
+            .on("mouseout", function() { 
+                d3.selectAll(".focus-label")
+                    .transition()
+                    .duration(250)
+                    .attr("opacity", "0.0")
+            });
+        
+            
+        return svg;
+    }
+    
+    /*
+     */
+    nbadvPlotter.addPlotToBodyURL = function(title, url, dimension, plotFunction)
+    {
+        console.log("fetching = " + url);
+        d3.json(url, function(error, data) {
+            //nbadvPlotter.addPlotToBody(title, data);
+            plotFunction(title, data, dimension);
+        })
+        .header("Content-Type","application/json");
+    }
+    
+    /*
+     * append a plot to the body
+     */
+    nbadvPlotter.getPlotContainer = function(title)
+    {
+        var container = d3.select("#plots")
+            .insert("span", ":first-child") // idiom for prepending in d3
+            .style("background", "#fff")
+            .style("border-style", "solid")
+            .style("border-thickness", "1px")
+            .style("border-color", "rgba(210,210,210,1.0)")
+            .style("margin", "15px")
+            //.style("width","1000px")
+            .style("display", "inline-block")
+            .style("margin", "auto")
+            .attr("class", "nbaviswindow");
+        
+        /*
+        var titleContainer = container.append("span")
+            .attr("align", "left")
+            .style("text-align", "left")
+            .style("padding", "10px")
+            .style("display", "block")
+            .style("margin-left", "20px")
+            .style("font-size", "20px");
+
+        titleContainer.append("button")
+            .attr("onclick", "$(this).parent().parent().remove();")
+            .attr("style", "font-size:20px;")
+            .style("opacity", "0.3")
+            .on("mouseover", function() { 
+                    d3.select(this)
+                        .transition()
+                        .duration(250)
+                        .style("opacity", "1.0"); 
+            })
+            .on("mouseout", function() { 
+                d3.select(this)
+                    .transition()
+                    .duration(250)
+                    .style("opacity", "0.3")
+            })
+            .html("-");
+       
+        titleContainer
+            .append("span")
+            .style("margin-left", "10px")
+            .html(title);
+        */
+
+        container.append("span");
+
+        return container;
+    }
+
+    /*
+     * append a plot to the body
+     */
+    nbadvPlotter.addPlotToBody = function(title, data, dimension)
+    {
+        var container = nbadvPlotter.getPlotContainer(title);
+        nbadvPlotter.appendSVGPlot(container, data, dimension, 1000, 200);
+        nbadvPlotter.appendSVGLinePlot(container, data, dimension, 1000, 200);
+    }
+    
+    /*
+     * append a plot to the body
+     */
+    nbadvPlotter.addMultiLinePlotToBody = function(title, data, dimension)
+    {
+        console.log(data);
+        var container = nbadvPlotter.getPlotContainer(title);
+        nbadvPlotter.appendSVGMultiLinePlot(container, data, dimension, 1000, 400);
+    }
+    
+    /*
+     * append a plot to the body
+     */
+    nbadvPlotter.addSimilarPlotToBody = function(title, data, dimension)
+    {
+        nbadvPlotter.addMultiLinePlotToBody(title, data, dimension)
+    }
+    
+    /*
+     * append a graph to the body
+     */
+    nbadvPlotter.addSimilarGraphToBody = function(title, data, dimension)
+    {
+        console.log(data);
+        var container = nbadvPlotter.getPlotContainer(title);
+        nbadvPlotter.appendFDLGraph(container, data, dimension, 1000, 600);
+    }
+    
+    /*
+     * append a vector graph to the body
+     */
+    nbadvPlotter.addVectorGraphToBody = function(title, data, dimension)
+    {
+        var container = nbadvPlotter.getPlotContainer(title);
+        nbadvPlotter.appendVectorGraph(container, data, dimension, 800, 800);
+    }
+
+    return nbadvPlotter;
+
+})();
+

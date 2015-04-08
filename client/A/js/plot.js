@@ -60,7 +60,7 @@ nbadvPlotter = (function(){
         var stepNum = 0;
         var tx=0, ty=0;
         var ss=1;
-        var stepMax = 130;
+        var stepMax = 200;
         
         var margin = {top: 10, right: 10, bottom: 10, left: 10};
         var width = totalWidth //- margin.left - margin.right;
@@ -73,6 +73,7 @@ nbadvPlotter = (function(){
             .domain([0, height])
             .range([height, 0]);
         
+        var brushCell;
         var brush = d3.svg.brush()
             .x(x)
             .y(y)
@@ -80,69 +81,64 @@ nbadvPlotter = (function(){
             .on("brush", brushmove)
             .on("brushend", brushend);
 
-
-        var brushCell;
-
-        // Clear the previously-active brush, if any.
         function brushstart(p) {
-        if (brushCell !== this) {
-          d3.select(brushCell).call(brush.clear());
-          //x.domain([0,10]);
-          //y.domain([0,10]);
-          brushCell = this;
-        }
+            if (brushCell !== this) {
+                d3.select(brushCell).call(brush.clear());
+                x.domain([200,width]);
+                y.domain([200,height]);
+                brushCell = this;
+            }
         }
 
-        // Highlight the selected circles.
         function brushmove(p) {
-        var e = brush.extent();
-        var b00 = e[0][0] //* width;
-        var b01 = e[0][1] //* width;
-        var b10 = e[1][0] //* width;
-        var b11 = e[1][1] //* width;
-        console.log("1 2 3 4 = " + b00 + "," + b01 + "," + b10 + "," + b11);
 
-        console.log("e = " + e);
+            var e = brush.extent();
 
-        svg.selectAll("text").classed("hidden", function(d, i) {
+            var b00 = e[0][0]; //* width;
+            var b01 = e[0][1]; //* width;
+            var b10 = e[1][0]; //* width;
+            var b11 = e[1][1]; //* width;
+            
+            console.log("1 2 3 4 = " + b00 + "," + b01 + "," + b10 + "," + b11);
+            console.log("e = " + e);
 
-            /*console.log("e = " + e);
-                console.log("   d = " + d);
-              console.log("       translate(" +
-                  Y[i][0] + "," +
-                  Y[i][1] + ")");
-              console.log("       translate(" +
-                  ((Y[i][0]*20*ss + tx) + 400) + "," +
-                  ((Y[i][1]*20*ss + ty) + 400) + ")");*/
+            svg.selectAll("text").classed("hidden", function(d, i) {
 
-          var xp = ((Y[i][0]*20*ss + tx) /*+ 400*/);
-          var yp = ((Y[i][1]*20*ss + ty) /*+ 400*/) * (-1) + width;
+                console.log("i = " + i );
 
-          //console.log("xp,yp = " + xp + "," + yp);
+                var xp = ((Y[i][0]*20*ss + tx) + 400);
+                var yp = ((Y[i][1]*20*ss + ty) + 400) * (-1) + width;
 
-          return b00 > xp || xp > b10
-              || b01 > yp || yp > b11;
-        });
+                //console.log("       translate(" +
+                //    ((Y[i][0]*20*ss + tx) + 400) + "," +
+                //    ((Y[i][1]*20*ss + ty) + 400) + ")");
+                console.log("xp,yp = " + xp + "," + yp);
+
+                return b00 > xp || xp > b10
+                    || b01 > yp || yp > b11;
+            });
         }
 
-        // If the brush is empty, select all circles.
         function brushend() {
             if (brush.empty()) svg.selectAll(".hidden").classed("hidden", false);
         }
 
         var updateEmbedding = function() {
           var Y = T.getSolution();
-          var datapoints = svg.selectAll('.u')
+          var datapoints = svg.selectAll('text')
               .data(data.words)
-              //.attr("transform", function(d, i) { return "translate(" +
-              //    ((Y[i][0]*20*ss + tx) /*+ 400*/) + "," +
-              //    ((Y[i][1]*20*ss + ty) /*+ 400*/) + ")"; });
               .attr("x",
-                  function(d,i) { return ((Y[i][0]*20*ss + tx) + 400); } )
+                  function(d,i) { 
+                    return ((Y[i][0]*20*ss + tx) + 400);
+                  })
               .attr("y",
-                  function(d,i) { return ((Y[i][1]*20*ss + ty) + 400); } )
-          if(stepNum == stepMax)
+                  function(d,i) { 
+                    return ((Y[i][1]*20*ss + ty) + 400);
+                  });
+          if(stepNum >= stepMax) {
               datapoints.call(brush);
+              console.log("brush");
+          }
         }
 
         var zoomHandler = function() {
@@ -332,39 +328,6 @@ nbadvPlotter = (function(){
             .style("display", "inline-block")
             .style("margin", "auto")
             .attr("class", "nbaviswindow");
-        
-        /*
-        var titleContainer = container.append("span")
-            .attr("align", "left")
-            .style("text-align", "left")
-            .style("padding", "10px")
-            .style("display", "block")
-            .style("margin-left", "20px")
-            .style("font-size", "20px");
-
-        titleContainer.append("button")
-            .attr("onclick", "$(this).parent().parent().remove();")
-            .attr("style", "font-size:20px;")
-            .style("opacity", "0.3")
-            .on("mouseover", function() { 
-                    d3.select(this)
-                        .transition()
-                        .duration(250)
-                        .style("opacity", "1.0"); 
-            })
-            .on("mouseout", function() { 
-                d3.select(this)
-                    .transition()
-                    .duration(250)
-                    .style("opacity", "0.3")
-            })
-            .html("-");
-       
-        titleContainer
-            .append("span")
-            .style("margin-left", "10px")
-            .html(title);
-        */
 
         container.append("span");
 

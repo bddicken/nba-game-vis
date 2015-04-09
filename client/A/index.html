@@ -27,7 +27,7 @@
 <body>
 <div id="container">
 
-<h1> NBA data vis - A </h1>
+<h1> t-SNE NBA browser </h1>
 
 <div class="demo">
   <form action="#">
@@ -66,16 +66,16 @@
   <span id="secondary-plots">
   <table border="0" style="display:inline-block; vertical-align:top;">
   <tr>
-    <td><span id="secondary-Shot"></span></td>
+    <td><div id="secondary-Shot"></div></td>
   </tr>
   <tr>
-    <td><span id="secondary-Reb"></span></td>
+    <td><div id="secondary-Reb"></div></td>
   </tr>
   <tr>
-    <td><span id="secondary-Assist"></span></td>
+    <td><div id="secondary-Assist"></div></td>
   </tr>
   <tr>
-    <td><span id="secondary-TO"></span></td>
+    <td><div id="secondary-TO"></div></td>
   </tr>
   </table>
   <span>
@@ -96,7 +96,9 @@
 
 /*
 updateSecondaryGraph(
-"#secondary-Shot", "Shot", {}, "Nash");
+"#secondary-Shot", "Shot", {}, '["Nash","Parker"]');
+updateSecondaryGraph(
+"#secondary-Shot", "Shot", {}, '["Nash","Parker","Bryant"]');
 updateSecondaryGraph(
 "#secondary-Reb", "Reb", {}, "Nash");
 updateSecondaryGraph(

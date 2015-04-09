@@ -510,11 +510,16 @@ router.route('/gameEvents/similar/layout/:filters')
                 
         var summariesAllGrouped = groupSummariesByKey(summariesAll, "player");
 
+        //matchPlayerNames = [
+        //        'Dragic', 'Nash', 'James', 
+        //        'Durant', 'Crawford', 'Howard', 
+        //        'Parker', 'Thabeet', 'Samuels',
+        //        'Ibaka', 'Love', 'A. Miller'];
         matchPlayerNames = [
                 'Dragic', 'Nash', 'James', 
-                'Durant', 'Crawford', 'Howard', 
-                'Parker', 'Thabeet', 'Samuels',
-                'Ibaka', 'Love', 'A. Miller'];
+                'Crawford', 'Howard', 
+                'Samuels',
+                'Love', 'A. Miller'];
         
         matchSummaries = getSummariesMatchingNames(summariesAllGrouped, matchPlayerNames);
         //matchSummaries = summariesAllGrouped;
@@ -688,6 +693,22 @@ router.route('/gameEvents/summary/:matchValue/:filters')
         
         var summariesGrouped = groupSummariesByKey(summaries, matchValue);
         
+        res.json(summariesGrouped);
+    });
+});
+
+router.route('/gameEvents/playerCurves/:playerNames/:filters')
+.get(function(req, res) {
+    //console.log(req.params.playerNames);
+    var playerNames = JSON.parse(req.params.playerNames);
+    var filters = JSON.parse(req.params.filters);
+    var query = Summary.find(filters).where('player').in(playerNames).limit(maxReturn);
+
+    // execute the query at a later time
+    query.exec(function (err, summaries) {
+        if (err) { res.send(err); }
+        //console.log("sum res = " + JSON.stringify(summaries));
+        var summariesGrouped = groupSummariesByKey(summaries, "player");
         res.json(summariesGrouped);
     });
 });

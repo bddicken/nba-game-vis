@@ -21,19 +21,9 @@ nbadvPlotter = (function(){
             .attr("y", 6)
             .attr("dy", ".71em")
             .style("text-anchor", "end")
-            .text("#");
+            .text("event count");
     }
     
-    nbadvPlotter.getFirstValue = function (d) {
-        var kk = Object.keys(d).sort();
-        return d[kk[0]];
-    }
-        
-    nbadvPlotter.getFirstKey = function (d) {
-        var kk = Object.keys(d).sort();
-        return kk[0];
-    }
-        
     nbadvPlotter.makeQuarterLines = function(selection, width, height, domain, range) {
         var xQ = d3.scale.ordinal()
             .domain(domain)
@@ -60,7 +50,7 @@ nbadvPlotter = (function(){
         var stepNum = 0;
         var tx=0, ty=0;
         var ss=1;
-        var stepMax = 200;
+        var stepMax = 400;
         
         var margin = {top: 10, right: 10, bottom: 10, left: 10};
         var width = totalWidth 
@@ -73,13 +63,6 @@ nbadvPlotter = (function(){
             .domain([0, height])
             .range([height, 0]);
         
-        var brush = d3.svg.brush()
-            .x(x)
-            .y(y)
-            .on("brushstart", brushstart)
-            .on("brush", brushmove)
-            .on("brushend", brushend);
-        
         var brushCell;
 
         var brushstart = function(p) {
@@ -91,23 +74,40 @@ nbadvPlotter = (function(){
             }
         }
 
+        var players = [];
+
         var brushmove = function(p) {
             var e = brush.extent();
             var b00 = e[0][0]; 
             var b01 = e[0][1];
             var b10 = e[1][0];
             var b11 = e[1][1];
+            players = [];
             svg.selectAll("text").classed("hidden", function(d, i) {
                 var xp = ((Y[i][0]*20*ss + tx) + 400);
                 var yp = ((Y[i][1]*20*ss + ty) + 400) * (-1) + width;
-                return b00 > xp || xp > b10
+                var value = b00 > xp || xp > b10
                     || b01 > yp || yp > b11;
+                if (!value) { players.push(d); };
+                return value;
             });
         }
 
         var brushend = function(p) {
             if (brush.empty()) svg.selectAll(".hidden").classed("hidden", false);
+            //console.log("players = " + JSON.stringify(players));
+            updateSecondaryGraph("#secondary-Shot", "Shot", {}, JSON.stringify(players));
+            updateSecondaryGraph("#secondary-TO", "TO", {}, JSON.stringify(players));
+            updateSecondaryGraph("#secondary-Reb", "Reb", {}, JSON.stringify(players));
+            updateSecondaryGraph("#secondary-Assist", "Assist", {}, JSON.stringify(players));
         }
+
+        var brush = d3.svg.brush()
+            .x(x)
+            .y(y)
+            .on("brushstart", brushstart)
+            .on("brush", brushmove)
+            .on("brushend", brushend);
 
         var updateEmbedding = function() {
           var Y = T.getSolution();
@@ -167,6 +167,8 @@ nbadvPlotter = (function(){
             .center([0,0])
             .on("zoom", zoomHandler);
         
+        brushend(null);
+        
         zoomListener(svg);
 
         var zoomMode = true;
@@ -199,7 +201,7 @@ nbadvPlotter = (function(){
     
     nbadvPlotter.appendSVGMultiLinePlot = function(containerSelection, allData, dimension, totalWidth, totalHeight)
     {
-        var margin = {top: 20, right: 20, bottom: 30, left: 50};
+        var margin = {top: 5, right: 5, bottom: 25, left: 40};
         var width = totalWidth - margin.left - margin.right;
         var height = totalHeight - margin.top - margin.bottom;
             
@@ -216,7 +218,7 @@ nbadvPlotter = (function(){
         var allMins = [];
         for (var i in allData) {
             var md = allData[i].minutes
-            console.log("md = " + JSON.stringify(md));
+            //console.log("md = " + JSON.stringify(md));
             for (var j in md) {
                 minute = md[j];
                 allMins[minute.minute] = minute.minute;
@@ -245,11 +247,14 @@ nbadvPlotter = (function(){
 
         var xAxis = d3.svg.axis()
             .scale(x)
-            .orient("bottom");
+            .orient("bottom")
+            //.ticks(12);
+            .tickValues([0,6,12,18,24,30,36,42,48]);
 
         var yAxis = d3.svg.axis()
             .scale(y)
-            .orient("left");
+            .orient("left")
+            .ticks(8);
 
         var line = d3.svg.line()
             .interpolate("basis")
@@ -265,7 +270,7 @@ nbadvPlotter = (function(){
             .append("text")
             .attr("fill", "black")
             .attr("x", (width - 120) + "px")
-            .attr("y", "0px")
+            .attr("y", "20px")
             .attr("font-size", "18px")
             .attr("class", "focus-label")
             .attr("opacity", "0.0")
@@ -365,30 +370,12 @@ nbadvPlotter = (function(){
     }
     
     /*
-     * append a plot to the body
-     */
-    nbadvPlotter.addSimilarPlotToBody = function(title, data, dimension)
-    {
-        nbadvPlotter.addMultiLinePlotToBody(title, data, dimension)
-    }
-    
-    /*
-     * append a graph to the body
-     */
-    nbadvPlotter.addSimilarGraphToBody = function(title, data, dimension)
-    {
-        console.log(data);
-        var container = nbadvPlotter.getPlotContainer(title);
-        nbadvPlotter.appendFDLGraph(container, data, dimension, 1000, 600);
-    }
-    
-    /*
      * append a vector graph to the body
      */
     nbadvPlotter.addVectorGraphToBody = function(title, data, dimension)
     {
         var container = nbadvPlotter.getPlotContainer(title);
-        nbadvPlotter.appendVectorGraph(container, data, dimension, 800, 800);
+        nbadvPlotter.appendVectorGraph(container, data, dimension, 730, 730);
     }
 
     return nbadvPlotter;

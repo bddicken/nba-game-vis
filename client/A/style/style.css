@@ -22,8 +22,8 @@ text {
 }
 
 text.hidden {
-  /*fill: #ccc !important;*/
-  fill-opacity: .3 !important;
+  fill: #ccc !important;
+  fill-opacity: .6 !important;
 }
 
 .axis {
@@ -57,7 +57,7 @@ label {
 
 h1 {
   font-size:36px;
-  color:#4af;
+  color:#c44;
 }
 
 select {

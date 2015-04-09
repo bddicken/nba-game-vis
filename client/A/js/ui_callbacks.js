@@ -24,7 +24,7 @@ var getFilters = function(deleteKeys) {
     }
 
 var updateVectorGraph  = function() {
-    var filters = getFilters(['player', 'season', 'team']);
+    var filters = getFilters([]);
     var player = document.getElementById(filterKeys[1]).value;
     filtersJSON= JSON.stringify(filters);
     nbadvPlotter.addPlotToBodyURL(
@@ -34,19 +34,26 @@ var updateVectorGraph  = function() {
         nbadvPlotter.addVectorGraphToBody);
 }
 
-var updateSecondaryGraph = function(id, dimension, filters, player) {
-            
+var updateSecondaryGraph = function(id, dimension, filters2, players) {
+     
+    var filters = getFilters([]);
     var filtersJSON= JSON.stringify(filters);
-    var url = nbadvURLs.similarPlayerGrouping + dimension + "/" + player + "/" + filtersJSON;
-    var title = "Similarity plot for " + player +
+    var url = nbadvURLs.playerGrouping + players + "/" + filtersJSON;
+    var title = "Similarity plot for " + players +
         " on event type " + dimension;
    
     console.log("makeing req");
-    console.log("url = " + url);
+    console.log(" secondary g url = " + url);
     d3.json(url, function(error, data) {
         console.log(data);
-        var container = d3.select(id);
-        nbadvPlotter.appendSVGMultiLinePlot(container, data, dimension, 800, 210);
+        d3.select(id).html("");
+        var outerContainer = d3.select(id)
+            .style("border-style", "solid")
+            .style("border-thickness", "1px")
+            .style("border-color", "rgba(210,210,210,1.0)");
+        outerContainer.append("div").html(dimension);
+        var container = outerContainer.append("div");
+        nbadvPlotter.appendSVGMultiLinePlot(container, data, dimension, 600, 160);
     })
     .header("Content-Type","application/json");
 }

@@ -21,9 +21,9 @@ text {
   fill-opacity: 1;
 }
 
-text.hidden {
+circle.hidden, text.hidden {
   /*fill: #ccc !important;*/
-  fill-opacity: .6 !important;
+  fill-opacity: .5 !important;
 }
 
 .axis {

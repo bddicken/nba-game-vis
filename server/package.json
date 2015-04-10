@@ -7,6 +7,7 @@
         "mongoose": "~3.6.13",
         "body-parser": "~1.0.1",
         "fast-csv": "~0.5.5 ",
+        "nba": "~0.4.1",
         "commander": "~2.6.0"
     }
 }

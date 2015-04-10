@@ -83,7 +83,7 @@ nbadvPlotter = (function(){
             var b10 = e[1][0];
             var b11 = e[1][1];
             players = [];
-            svg.selectAll("text").classed("hidden", function(d, i) {
+            svg.selectAll("circle").classed("hidden", function(d, i) {
                 var xp = ((Y[i][0]*20*ss + tx) + 400);
                 var yp = ((Y[i][1]*20*ss + ty) + 400) * (-1) + width;
                 var value = b00 > xp || xp > b10
@@ -111,15 +111,27 @@ nbadvPlotter = (function(){
 
         var updateEmbedding = function() {
           var Y = T.getSolution();
+
+          // TODO: cleanup circle/text pairing
+          var datapoints = svg.selectAll('circle')
+              .data(data.words)
+              .attr("cx",
+                  function(d,i) { 
+                    return ((Y[i][0]*20*ss + tx) + 400);
+                  })
+              .attr("cy",
+                  function(d,i) { 
+                    return ((Y[i][1]*20*ss + ty) + 400);
+                  });
           var datapoints = svg.selectAll('text')
               .data(data.words)
               .attr("x",
                   function(d,i) { 
-                    return ((Y[i][0]*20*ss + tx) + 400);
+                    return ((Y[i][0]*20*ss + tx) + 400) + 6;
                   })
               .attr("y",
                   function(d,i) { 
-                    return ((Y[i][1]*20*ss + ty) + 400);
+                    return ((Y[i][1]*20*ss + ty) + 400) + 6;
                   });
         }
 
@@ -156,10 +168,12 @@ nbadvPlotter = (function(){
             .enter().append("g")
             .attr("class", "u");
 
+        g.append("circle")
+            .attr("fill", function(d) { return nbadvPlotter.color(d); })
+            .attr("r", "6px");
         g.append("text")
             .attr("text-anchor", "top")
             .attr("font-size", 12)
-            .attr("fill", function(d) { return nbadvPlotter.color(d); })
             .text(function(d) { return d; });
 
         var zoomListener = d3.behavior.zoom()

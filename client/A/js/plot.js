@@ -159,7 +159,7 @@ nbadvPlotter = (function(){
         g.append("text")
             .attr("text-anchor", "top")
             .attr("font-size", 12)
-            .attr("fill", "#333")
+            .attr("fill", function(d) { return nbadvPlotter.color(d); })
             .text(function(d) { return d; });
 
         var zoomListener = d3.behavior.zoom()

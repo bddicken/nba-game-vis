@@ -22,7 +22,7 @@ text {
 }
 
 text.hidden {
-  fill: #ccc !important;
+  /*fill: #ccc !important;*/
   fill-opacity: .6 !important;
 }
 

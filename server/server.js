@@ -403,16 +403,18 @@ var getFirstKey = function (d) {
 /**
  * Find similar curves based on summed-difference.
  */
-var compareSummariesDiff = function(base, rhs, groupBy) {
+var compareSummariesDiff = function(base, rhs, groupBy, beginMin, endMin) {
     var baseMins = base.minutes; 
     var compMins = rhs.minutes; 
     var minInts = Math.min(baseMins.length, compMins.length);
     var j = 0;
     var score = 0;
     while (j < minInts) {
-        var baseMinute = baseMins[j][groupBy];
-        var compMinute = compMins[j][groupBy];
-        score += Math.abs(baseMinute - compMinute);
+        if (beginMin <= j && j <= endMin) {
+            var baseMinute = baseMins[j][groupBy];
+            var compMinute = compMins[j][groupBy];
+            score += Math.abs(baseMinute - compMinute);
+        }
         j++;
     }
     return score;
@@ -442,7 +444,7 @@ var findSimilarSummariesDiff = function(base, all, groupBy, threshold) {
             j++;
         }
         */
-        var score = compareSummariesDiff(base, summary, groupBy);
+        var score = compareSummariesDiff(base, summary, groupBy, 0, 48);
         var scoreSumPair = {"score":score, "summary":summary}
         allScored.push(scoreSumPair);
     }
@@ -501,10 +503,16 @@ var findSimilarSummaries = function(base, all, groupBy) {
 }
 
 
-router.route('/gameEvents/similar/layout/:filters')
+router.route('/tsne/playerSimilarity/:begin_min/:end_min/:filters')
 .get(function(req, res) {
+    var beginMin = JSON.parse(req.params.begin_min);
+    var endMin = JSON.parse(req.params.end_min);
     var filters = JSON.parse(req.params.filters);
     var summariesAll = Summary.find(filters).limit(maxReturn);
+
+    console.log("min range = " + beginMin + ", " + endMin);
+    console.log("filters = " + JSON.stringify(filters));
+
     summariesAll.exec(function (err, summariesAll) {
         if (err) { res.send(err); }
                 
@@ -515,6 +523,7 @@ router.route('/gameEvents/similar/layout/:filters')
         //        'Durant', 'Crawford', 'Howard', 
         //        'Parker', 'Thabeet', 'Samuels',
         //        'Ibaka', 'Love', 'A. Miller'];
+
         matchPlayerNames = [
                 'Dragic', 'Nash', 'James', 
                 'Crawford', 'Howard', 
@@ -540,10 +549,10 @@ router.route('/gameEvents/similar/layout/:filters')
             for (var k2 in matchSummaries)
             {
                 var s2 = summariesAllGrouped[k2];
-                vector.push(compareSummariesDiff(s1, s2, 'Assist'));
-                vector.push(compareSummariesDiff(s1, s2, 'Shot'));
-                vector.push(compareSummariesDiff(s1, s2, 'Reb'));
-                vector.push(compareSummariesDiff(s1, s2, 'TO'));
+                vector.push(compareSummariesDiff(s1, s2, 'Assist', beginMin, endMin));
+                vector.push(compareSummariesDiff(s1, s2, 'Shot', beginMin, endMin));
+                vector.push(compareSummariesDiff(s1, s2, 'Reb', beginMin, endMin));
+                vector.push(compareSummariesDiff(s1, s2, 'TO', beginMin, endMin));
             }
             result['vecs'].push(vector);
         }

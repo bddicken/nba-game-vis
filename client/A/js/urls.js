@@ -13,6 +13,6 @@ nbadvURLs.playerGrouping = nbadvURLs.baseURLAPI + "gameEvents/playerCurves/";
 nbadvURLs.summaryPlayerGrouping = nbadvURLs.baseURLAPI + "gameEvents/summary/";
 nbadvURLs.similarPlayerGrouping = nbadvURLs.baseURLAPI + "gameEvents/similar/";
 nbadvURLs.similarPlayerGroupingGraph = nbadvURLs.baseURLAPI + "gameEvents/similar/graph/";
-nbadvURLs.similarPlayerGroupingVectorGraph = nbadvURLs.baseURLAPI + "gameEvents/similar/layout/";
+nbadvURLs.similarPlayerGroupingVectorGraph = nbadvURLs.baseURLAPI + "tsne/playerSimilarity/";
 
 

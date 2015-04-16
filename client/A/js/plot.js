@@ -3,7 +3,7 @@ nbadvPlotter = (function(){
 
     var nbadvPlotter = {}
 
-    nbadvPlotter.color = d3.scale.category10();
+    nbadvPlotter.color = d3.scale.category20();
 
     nbadvPlotter.plotX = function(selection, width, height, xAxis) {
         return selection.append("g")
@@ -43,7 +43,8 @@ nbadvPlotter = (function(){
             );
     }
     
-    nbadvPlotter.appendVectorGraph = function(containerSelection, data, dimension, totalWidth, totalHeight) {
+    nbadvPlotter.appendVectorGraph = function(
+            containerSelection, data, dimension, totalWidth, totalHeight) {
         var opt = {epsilon: 15, perplexity: 6};
         var T = new tsnejs.tSNE(opt); // create a tSNE instance
         var Y;
@@ -85,7 +86,7 @@ nbadvPlotter = (function(){
             players = [];
             svg.selectAll("circle").classed("hidden", function(d, i) {
                 var xp = ((Y[i][0]*20*ss + tx) + 400);
-                var yp = ((Y[i][1]*20*ss + ty) + 400) * (-1) + width;
+                var yp = ((Y[i][1]*20*ss + ty) + 400) * (-1) + height;
                 var value = b00 > xp || xp > b10
                     || b01 > yp || yp > b11;
                 if (!value) { players.push(d); };
@@ -100,6 +101,8 @@ nbadvPlotter = (function(){
             updateSecondaryGraph("#secondary-TO", "TO", {}, JSON.stringify(players));
             updateSecondaryGraph("#secondary-Reb", "Reb", {}, JSON.stringify(players));
             updateSecondaryGraph("#secondary-Assist", "Assist", {}, JSON.stringify(players));
+            updateSecondaryGraph("#secondary-Foul", "Foul", {}, JSON.stringify(players));
+            updateSecondaryGraph("#secondary-FT", "FT", {}, JSON.stringify(players));
         }
 
         var brush = d3.svg.brush()
@@ -213,8 +216,8 @@ nbadvPlotter = (function(){
         return svg;
     }
     
-    nbadvPlotter.appendSVGMultiLinePlot = function(containerSelection, allData, dimension, totalWidth, totalHeight)
-    {
+    nbadvPlotter.appendSVGMultiLinePlot = function(
+            containerSelection, allData, dimension, totalWidth, totalHeight) {
         var margin = {top: 5, right: 5, bottom: 25, left: 40};
         var width = totalWidth - margin.left - margin.right;
         var height = totalHeight - margin.top - margin.bottom;
@@ -246,8 +249,9 @@ nbadvPlotter = (function(){
             data = allData[i].minutes
             for (var j in data) {
                 minute = data[j];
-                if (maxEventCount < minute[dimension])
-                { maxEventCount = minute[dimension]; }
+                for (var k in minute) {
+                    if (maxEventCount < minute[k]) { maxEventCount = minute[k]; }
+                }
             }
         }
 
@@ -292,9 +296,34 @@ nbadvPlotter = (function(){
         svg.call(nbadvPlotter.plotX, width, height, xAxis);
         svg.call(nbadvPlotter.plotY, width, height, yAxis);
         
-        console.log(allData);
-       
+        //console.log(allData);
         var data = allData;
+        
+        var area_data = [];
+
+        for (var i in data[0].minutes) {
+            var d = data[0].minutes[i];
+            console.log("d = " + JSON.stringify(d));
+            var a = {};
+            a.x_axis = d.minute;
+            var beginMin = $('#timeSlidertextmin').html();
+            var endMin   = $('#timeSlidertextmax').html();
+            console.log("em = " + beginMin + '/' + endMin + "  " + a.x_axis);
+            if (beginMin <= a.x_axis && a.x_axis <= endMin) {
+                area_data.push(a);
+            }
+        }
+        console.log("adl = " + area_data.length);
+
+        var area = d3.svg.area()
+            .interpolate("basis")
+            .x(function(d) { console.log("d = " + JSON.stringify(d)); return Math.ceil(x(d.x_axis)); })
+            .y0(height)
+            .y1(function(d) { 
+                var v = y(y.domain()[y.domain().length-1]);
+                console.log("YR = " + v); 
+                return v; 
+            });
 
         svg.call(nbadvPlotter.makeQuarterLines, 
                 width, height,
@@ -308,7 +337,7 @@ nbadvPlotter = (function(){
             .attr("class", "multi-line")
             .attr("fill", "none")
             .attr("stroke", function(d, i) { var el = data[i].player; return nbadvPlotter.color(el); } )
-            .attr("stroke-width", "3px")
+            .attr("stroke-width", "2px")
             .attr("d", function(d) { return line(d.minutes); })
             .on("mouseover", function() { 
                     var label = d3.select(this).attr("label"); 
@@ -325,6 +354,13 @@ nbadvPlotter = (function(){
                     .attr("opacity", "0.0")
             });
         
+        svg.append("path")
+            .datum(area_data)
+            .attr("class", "area")
+            .attr("opacity", ".075")
+            .attr("fill", "red")
+            .attr("stroke", "blue")
+            .attr("d", area);
             
         return svg;
     }
@@ -347,13 +383,11 @@ nbadvPlotter = (function(){
     nbadvPlotter.getPlotContainer = function(title)
     {
         var container = d3.select("#plots")
-            .insert("span", ":first-child") // idiom for prepending in d3
             .style("background", "#fff")
             .style("border-style", "solid")
             .style("border-thickness", "1px")
             .style("border-color", "rgba(210,210,210,1.0)")
             .style("margin", "15px")
-            //.style("width","1000px")
             .style("display", "inline-block")
             .style("margin", "auto")
             .attr("class", "nbaviswindow");
@@ -389,7 +423,7 @@ nbadvPlotter = (function(){
     nbadvPlotter.addVectorGraphToBody = function(title, data, dimension)
     {
         var container = nbadvPlotter.getPlotContainer(title);
-        nbadvPlotter.appendVectorGraph(container, data, dimension, 730, 730);
+        nbadvPlotter.appendVectorGraph(container, data, dimension, 600, 700);
     }
 
     return nbadvPlotter;

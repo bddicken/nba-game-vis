@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>jQuery UI Selectmenu - Product Selection</title>
+  <title>NBAvis</title>
 
   <!-- D3 -->
   <script src="http://d3js.org/d3.v3.js"></script>
@@ -22,44 +22,56 @@
   <!-- fonts -->
   <link href='http://fonts.googleapis.com/css?family=Indie+Flower' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Varela+Round' rel='stylesheet' type='text/css'>
+ 
+  <!-- d3 slider -->
+  <link rel="stylesheet" href="lib/d3.slider/d3.slider.css" />
+  <script src="lib/d3.slider/d3.slider.js"></script>
 
 </head>
 <body>
-<div id="container">
+<div id="title-bar">
+  
+  <span id="title"> t-SNE NBA browser </span>
 
-<h1> t-SNE NBA browser </h1>
-
-<div class="demo">
-  <form action="#">
-    <fieldset>
+  <form id="options-form" action="#">
+    <fieldset class="disp-inline">
       
-      <div class="dropdown">
+      <span class="dropdown">
       <select name="team" id="team">
         <option value="" disabled selected>Team</option>
         <option value="">All</option>
       </select>
-      </div>
+      </span>
       
-      <div class="dropdown">
+      <span class="dropdown">
       <select name="season" id="season">
         <option value="" disabled selected>Season</option>
         <option value="">All</option>
       </select>
-      </div>
+      </span>
       
       <div class="dropdown">
-      <select name="player" id="player">
-        <option value="" disabled selected>Player</option>
-        <option value="">All</option>
-        <!-- all other players will be loaded here dynamically -->
-      </select>
+      <button id="vecGraph" value="update g">update vg</button>
       </div>
-
-      <br/>
-      <br/>
-
+      
     </fieldset>
   </form>
+
+
+</div>
+
+<div id="container">
+
+
+<div class="demo">
+  
+  <div>Range Slider with event, values: 
+    <span id="timeSlidertextmin">0</span>, 
+    <span id="timeSlidertextmax">48</span>
+  </div>
+  <div id="timeSlider"></div>
+ 
+  <br/>
  
   <span>
   <span id="plots"></span>
@@ -69,16 +81,17 @@
   <table border="0" style="display:inline-block; vertical-align:top;">
   <tr>
     <td><div id="secondary-Shot"></div></td>
-  </tr>
-  <tr>
     <td><div id="secondary-Reb"></div></td>
   </tr>
   <tr>
     <td><div id="secondary-Assist"></div></td>
-  </tr>
-  <tr>
     <td><div id="secondary-TO"></div></td>
   </tr>
+  <tr>
+    <td><div id="secondary-Foul"></div></td>
+    <td><div id="secondary-FT"></div></td>
+  </tr>
+
   </table>
   <span>
 
@@ -86,6 +99,7 @@
 </div>
 
 <div id="existing"></div>
+
 
 </body>
 
@@ -95,19 +109,6 @@
 <script src="js/ui_callbacks.js"></script>
 
 <script>
-
-/*
-updateSecondaryGraph(
-"#secondary-Shot", "Shot", {}, '["Nash","Parker"]');
-updateSecondaryGraph(
-"#secondary-Shot", "Shot", {}, '["Nash","Parker","Bryant"]');
-updateSecondaryGraph(
-"#secondary-Reb", "Reb", {}, "Nash");
-updateSecondaryGraph(
-"#secondary-Assist", "Assist", {}, "Nash");
-updateSecondaryGraph(
-"#secondary-TO", "TO", {}, "Nash");
-*/
 
 updateVectorGraph();
 
@@ -131,9 +132,20 @@ var setupDropdown = function (url, id, valueGetter, textGetter) {
     });
 }
 
-setupDropdown(nbadvURLs.playersURL, '#player', function(d){return d['name'];}, function(d){return d['fullName'];})
 setupDropdown(nbadvURLs.teamsURL, '#team', function(d){return d['name'];}, function(d){return d['name'];})
 setupDropdown(nbadvURLs.seasonsURL, '#season', function(d){return d['name'];}, function(d){return d['name'];})
+
+d3.select('#timeSlider').call(
+    d3.slider()
+        .axis(true)
+        .min(0)
+        .max(48)
+        .step(1)
+        .value( [ 0, 48 ] )
+        .on("slide", function(evt, value) {
+            console.log(value[ 0 ] + ". " + value[ 1 ]);
+            d3.select('#timeSlidertextmin').text(value[ 0 ]);
+            d3.select('#timeSlidertextmax').text(value[ 1 ]); }));
 
 </script>
 

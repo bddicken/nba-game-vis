@@ -2,9 +2,32 @@
   fill: LightSeaGreen;
 }
 
+#timeSlider {
+    width: 400px;
+    margin: 10px;
+    display: inline-block;
+}
+
 .multi-line:hover {
-  opacity:0.4;
-  /*fill: Coral;*/
+  opacity:0.2;
+}
+
+.disp-inline {
+  display:inline;
+}
+
+#options-form {
+  display:inline;
+}
+
+#title-bar {
+  background-color: steelblue;
+  margin-top: 0px;
+  margin-bottom: 10px;
+  padding-top: 0px;
+  height:50px;
+  width 100%;
+  text-align:center;
 }
 
 .bar:hover {
@@ -12,18 +35,20 @@
 }
 
 .extent {
-  fill: #558;
-  fill-opacity: .225;
-  stroke: #fff;
+  fill: #000;
+  fill-opacity: .075;
+  stroke: #888;
+  stroke-width: 4px;
 }
 
 text {
   fill-opacity: 1;
 }
 
-circle.hidden, text.hidden {
+circle.hidden, 
+text.hidden {
   /*fill: #ccc !important;*/
-  fill-opacity: .5 !important;
+  fill-opacity: .65 !important;
 }
 
 .axis {
@@ -43,8 +68,6 @@ circle.hidden, text.hidden {
 
 fieldset {
   border: 0;
-  margin-left:auto;
-  margin-right:auto;
 }
 
 label {
@@ -55,9 +78,12 @@ label {
   font-size:20px;
 }
 
-h1 {
-  font-size:36px;
-  color:#c44;
+#title {
+  text-align:center;
+  font-size:28px;
+  color: Coral;
+  margin-top:10px;
+  margin-left:10px;
 }
 
 select {
@@ -74,8 +100,8 @@ select {
 
 #container {
   text-align:center;
-  margin-left:auto;
-  margin-right:auto;
+  margin-top:0px;
+  margin-left:5px;
 }
 
 body {
@@ -83,8 +109,8 @@ body {
   font-family: 'Varela Round', 'Indie Flower', cursive;
   background-color:#eee;
   background-repeat: repeat-y;
-  margin-left:auto;
-  margin-right:auto;
+  margin-top:0px;
+  margin-left:0px;
 }
 
 .axis path,
@@ -96,6 +122,7 @@ body {
 
 .area {
   fill: steelblue;
+  fill: red;
 }
 
 .ui-selectmenu-menu {
@@ -105,19 +132,19 @@ body {
     z-index:1000 !important;
     font: 'Varela Round', 'Indie Flower', cursive;
     font-family: 'Varela Round', 'Indie Flower', cursive;
-    font-size:18px;
+    font-size:16px;
     vertical-align:middle;
 }
 
 .ui-selectmenu-button {
     font-family: 'Varela Round', 'Indie Flower', cursive;
-    font-size:18px;
+    font-size:16px;
     vertical-align:middle;
 }
 
 .ui-button{
     font-family: 'Varela Round', 'Indie Flower', cursive;
-    font-size:18px;
+    font-size:16px;
     vertical-align:middle;
 }
 

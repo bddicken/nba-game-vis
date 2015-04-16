@@ -358,7 +358,7 @@ nbadvPlotter = (function(){
             .datum(area_data)
             .attr("class", "area")
             .attr("opacity", ".075")
-            .attr("fill", "red")
+            .attr("fill", "#000")
             .attr("stroke", "blue")
             .attr("d", area);
             

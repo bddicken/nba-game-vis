@@ -53,7 +53,8 @@ var updateSecondaryGraph = function(id, dimension, filters2, players) {
         var outerContainer = d3.select(id)
             .style("border-style", "solid")
             .style("border-thickness", "1px")
-            .style("border-color", "rgba(210,210,210,1.0)");
+            .style("border-color", "rgba(210,210,210,1.0)")
+            .style("background", "#fff");
         outerContainer.append("div").html(dimension);
         var container = outerContainer.append("div");
         nbadvPlotter.appendSVGMultiLinePlot(container, data, dimension, 410, 210);

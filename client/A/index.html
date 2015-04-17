@@ -29,9 +29,15 @@
 
 </head>
 <body>
+
+<div id="logo">
+  <span>
+    <img id="logo-img" src="style/img/ballers-logo.png" alt="logo">
+  </span>
+</div>
+
+
 <div id="title-bar">
-  
-  <span id="title"> t-SNE NBA browser </span>
 
   <form id="options-form" action="#">
     <fieldset class="disp-inline">
@@ -53,10 +59,9 @@
       <div class="dropdown">
       <button id="vecGraph" value="update g">update vg</button>
       </div>
-      
+
     </fieldset>
   </form>
-
 
 </div>
 
@@ -145,7 +150,12 @@ d3.select('#timeSlider').call(
         .on("slide", function(evt, value) {
             console.log(value[ 0 ] + ". " + value[ 1 ]);
             d3.select('#timeSlidertextmin').text(value[ 0 ]);
-            d3.select('#timeSlidertextmax').text(value[ 1 ]); }));
+            d3.select('#timeSlidertextmax').text(value[ 1 ]); })
+        /*.on("mouseout", function(evt, value) {
+            console.log("mouseout");
+            updateVectorGraph();     
+          })*/
+);
 
 </script>
 

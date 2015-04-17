@@ -2,6 +2,20 @@
   fill: LightSeaGreen;
 }
 
+#logo-img {
+    width: 170px;
+    height: 100px;
+}
+
+#logo {
+    margin-right:0px;
+    display: inline;
+    vertical-align:middle;
+    position:absolute;
+    left:10px;
+    top:0px;
+}
+
 #timeSlider {
     width: 400px;
     margin: 10px;
@@ -18,6 +32,11 @@
 
 #options-form {
   display:inline;
+  margin-top:0px;
+  margin-top:0px;
+  margin-left:auto;
+  margin-right:auto;
+  vertical-align:middle
 }
 
 #title-bar {
@@ -48,7 +67,7 @@ text {
 circle.hidden, 
 text.hidden {
   /*fill: #ccc !important;*/
-  fill-opacity: .65 !important;
+  /*fill-opacity: .65 !important;*/
 }
 
 .axis {
@@ -137,6 +156,7 @@ body {
 }
 
 .ui-selectmenu-button {
+    max-width: 160px;
     font-family: 'Varela Round', 'Indie Flower', cursive;
     font-size:16px;
     vertical-align:middle;

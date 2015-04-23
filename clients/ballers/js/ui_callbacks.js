@@ -60,26 +60,11 @@ var updateSecondaryGraph = function(id, dimension, filters2, players) {
 
 $(function() {
 
-    $( "#season" ).selectmenu()
-        .change(function(event) {
-            alert("hi");
-            event.preventDefault(); // stop page redirection
-            updateVectorGraph();
-        });
+    $( "#season" ).selectmenu();
 
-    $( "#team" ).selectmenu()
-        .change(function(event) {
-            alert("hi");
-            event.preventDefault(); // stop page redirection
-            updateVectorGraph();
-        });
+    $( "#team" ).selectmenu();
     
-    $( "#eventType" ).selectmenu()
-        .change(function() {
-            alert("hi");
-            event.preventDefault(); // stop page redirection
-            updateVectorGraph();
-        });
+    $( "#eventType" ).selectmenu();
     
     $( "#vecGraph" )
         .button()
@@ -91,6 +76,7 @@ $(function() {
     $( "#about" )
         .button()
         .click(function( event ) {
+            event.preventDefault(); // stop page redirection
             $(function() {
                 $( "#about-dialog" ).dialog();
             });

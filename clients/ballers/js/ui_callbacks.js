@@ -1,7 +1,7 @@
 
-var filterKeys = ["team", "season"];
+var allFilterKeys = ["team", "season", "eventType"];
 
-var getFilters = function(deleteKeys) {
+var getFilters = function(filterKeys) {
     var filters = {};
     for(var i in filterKeys) { 
         var key = filterKeys[i]
@@ -10,17 +10,12 @@ var getFilters = function(deleteKeys) {
             filters[key] = value 
     } 
     console.log("filters=" + JSON.stringify(filters));
-    for(var i in deleteKeys) { 
-        var deleteKey = deleteKeys[i]
-        delete filters[deleteKey]
-    } 
-    console.log("filters=" + JSON.stringify(filters));
     return filters;
-    }
+}
 
 var updateVectorGraph  = function() {
-    var filters = getFilters([]);
-    var player = document.getElementById(filterKeys[1]).value;
+    var filters = getFilters(["team", "season", "eventType"]);
+    var player = document.getElementById(allFilterKeys[1]).value;
     var filtersJSON= JSON.stringify(filters);
     
     var beginMin = $('#timeSlidertextmin').html();
@@ -40,12 +35,12 @@ var updateVectorGraph  = function() {
 
 var updateSecondaryGraph = function(id, dimension, filters2, players) {
      
-    var filters = getFilters([]);
+    var filters = getFilters(["team", "season"]);
     var filtersJSON= JSON.stringify(filters);
     var url = nbadvURLs.playerGrouping + players + "/" + filtersJSON;
    
     //console.log("making req");
-    //console.log(" secondary g url = " + url);
+    console.log(" secondary url = " + url);
     
     d3.json(url, function(error, data) {
         console.log(data);
@@ -64,9 +59,27 @@ var updateSecondaryGraph = function(id, dimension, filters2, players) {
 }
 
 $(function() {
-    $( "#season" ).selectmenu();
-    $( "#team" ).selectmenu();
-    $( "#eventType" ).selectmenu();
+
+    $( "#season" ).selectmenu()
+        .change(function(event) {
+            alert("hi");
+            event.preventDefault(); // stop page redirection
+            updateVectorGraph();
+        });
+
+    $( "#team" ).selectmenu()
+        .change(function(event) {
+            alert("hi");
+            event.preventDefault(); // stop page redirection
+            updateVectorGraph();
+        });
+    
+    $( "#eventType" ).selectmenu()
+        .change(function() {
+            alert("hi");
+            event.preventDefault(); // stop page redirection
+            updateVectorGraph();
+        });
     
     $( "#vecGraph" )
         .button()

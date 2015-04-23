@@ -44,7 +44,7 @@ nbadvPlotter = (function(){
     }
     
     nbadvPlotter.appendVectorGraph = function(containerSelection, data, totalWidth, totalHeight) {
-        var opt = {epsilon: 20, perplexity: 6};
+        var opt = {epsilon: 20, perplexity: 12};
         var T = new tsnejs.tSNE(opt); // create a tSNE instance
         var Y;
         var stepNum = 0;
@@ -177,7 +177,7 @@ nbadvPlotter = (function(){
             .attr("class", "u");
 
         g.append("circle")
-            .attr("fill", "SteelBlue" )
+            .attr("fill", "SteelBlue")
             .attr("r", "6px");
         g.append("text")
             .style("cursor", "default")

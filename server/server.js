@@ -206,7 +206,7 @@ router.route('/gameSummary/:filters')
         var arrayLength = ge.length;
         for (var i = 0; i < arrayLength; i++) {
             minute = Math.floor(ge[i].secondsIntoGame / 60);
-            eventType = ge[i].eventType;
+            var eventType = ge[i].eventType;
             allEventTypes[eventType] = eventType;
 
             if (summary[minute] == null || summary[minute] == undefined) { 
@@ -405,7 +405,7 @@ var compareSummariesDiff = function(base, rhs, groupBy, beginMin, endMin) {
     var compMins = rhs.minutes; 
     var minInts = Math.min(baseMins.length, compMins.length);
     var j = 0;
-    var score = 0;
+    var score = 1;
     while (j < minInts) {
         if (beginMin <= j && j <= endMin) {
             var baseMinute = baseMins[j][groupBy];
@@ -505,44 +505,35 @@ router.route('/tsne/playerSimilarity/:begin_min/:end_min/:filters')
     var beginMin = JSON.parse(req.params.begin_min);
     var endMin = JSON.parse(req.params.end_min);
     var filters = JSON.parse(req.params.filters);
+    
+    var eventType = filters.eventType;
+    
+    delete filters['eventType'];
+    
     var summariesAll = Summary.find(filters).limit(maxReturn);
 
     console.log("min range = " + beginMin + ", " + endMin);
     console.log("filters = " + JSON.stringify(filters));
-    
-    console.log("A");
+    console.log("eventType = " + eventType);
 
     summariesAll.exec(function (err, summariesAll) {
         if (err) { res.send(err); }
-        console.log("B");
                 
         var summariesAllGrouped = groupSummariesByKey(summariesAll, "player");
-        
-        console.log("B1");
-       
-        ///*
+
         matchPlayerNames = [
                 'Dragic', 'Nash', 'James', 
                 'Durant', 'Crawford', 'Howard', 
                 'Parker', 'Thabeet', 'Samuels',
                 'Ibaka', 'Love', 'A. Miller',
                 'Bayless', 'Marion'];
-        //*/
-        /*
-        matchPlayerNames = [
-                'Dragic', 'Nash', 'James', 
-                'Crawford', 'Howard', 
-                'Samuels', 'Love', 'A. Miller'];
-        */
 
         matchSummaries = getSummariesMatchingNames(summariesAllGrouped, matchPlayerNames);
         //matchSummaries = summariesAllGrouped;
         
-        console.log("C");
-        
-        //console.log("\n\nSA size = "+ summariesAll.length)
-        //console.log("\n\nSAG size = "+ summariesAllGrouped.length)
-        //console.log("\n\nMPG size = "+ matchSummaries.length)
+        console.log("\n\nSA size = "+ summariesAll.length)
+        console.log("\n\nSAG size = "+ summariesAllGrouped.length)
+        console.log("\n\nMPG size = "+ matchSummaries.length)
 
         result = {}
 
@@ -556,16 +547,19 @@ router.route('/tsne/playerSimilarity/:begin_min/:end_min/:filters')
             for (var k2 in matchSummaries)
             {
                 var s2 = summariesAllGrouped[k2];
-                vector.push(compareSummariesDiff(s1, s2, 'Assist', beginMin, endMin));
-                vector.push(compareSummariesDiff(s1, s2, 'Shot', beginMin, endMin));
-                vector.push(compareSummariesDiff(s1, s2, 'Reb', beginMin, endMin));
-                vector.push(compareSummariesDiff(s1, s2, 'TO', beginMin, endMin));
-                vector.push(compareSummariesDiff(s1, s2, 'FT', beginMin, endMin));
-                vector.push(compareSummariesDiff(s1, s2, 'Foul', beginMin, endMin));
+               
+                // If eventType was defined by user, use that. Else, use them all
+                var eventTypes = ['Assist', 'Shot', 'Reb', 'TO', 'FT', 'Foul'];
+                if (eventType != undefined) {
+                    eventTypes = [eventType];
+                }
+                
+                for (var i in eventTypes) {
+                    vector.push(compareSummariesDiff(s1, s2, eventTypes[i], beginMin, endMin));
+                }
             }
             result['vecs'].push(vector);
         }
-        console.log("D");
 
         res.json(result);
     });

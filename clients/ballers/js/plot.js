@@ -43,8 +43,7 @@ nbadvPlotter = (function(){
             );
     }
     
-    nbadvPlotter.appendVectorGraph = function(
-            containerSelection, data, dimension, totalWidth, totalHeight) {
+    nbadvPlotter.appendVectorGraph = function(containerSelection, data, totalWidth, totalHeight) {
         var opt = {epsilon: 20, perplexity: 6};
         var T = new tsnejs.tSNE(opt); // create a tSNE instance
         var Y;
@@ -178,10 +177,10 @@ nbadvPlotter = (function(){
             .attr("class", "u");
 
         g.append("circle")
-            //.attr("fill", function(d) { return nbadvPlotter.color(d); })
             .attr("fill", "SteelBlue" )
             .attr("r", "6px");
         g.append("text")
+            .style("cursor", "default")
             .attr("text-anchor", "top")
             .attr("font-size", 12)
             .text(function(d) { return d; });
@@ -195,6 +194,7 @@ nbadvPlotter = (function(){
         
         zoomListener(svg);
 
+        // Toggles zooming and brushing mode
         var toggleZoomBrush = function() {
             if (zoomBrushMode) {
               tzl = d3.behavior.zoom()
@@ -212,31 +212,32 @@ nbadvPlotter = (function(){
                 zoomListener(svg);
             }
             zoomBrushMode = !zoomBrushMode;
-            return zoomBrushMode;
-
+            return zoomBrushMode ? "brush" : "zoom"; 
         }
 
         var zoomBrushMode = true;
-        
-        svg.append("rect")
-            .attr("x", 5)
-            .attr("y", 5)
-            .attr("width", 55)
-            .attr("height", 25)
-            .attr("fill", "#bbb")
-
-        svg.append("text")
-            .attr("x", 15)
-            .attr("y", 20)
+       
+        // Zoom/Brush toggle button
+        var zoomBrushButton = svg.append("g");
+        var zoomBrushText = zoomBrushButton.append("text")
+            .attr("x", 10)
+            .attr("y", 22)
             .attr("text-anchor", "top")
             .attr("font-size", 14)
             .style("cursor", "pointer")
             .on("click", function(d) { 
-                toggleZoomBrush(); 
-                d3.select(this).text(function() { return zoomBrushMode ? "brush" : "zoom"; } );
+                d3.select(this).text(function() { return toggleZoomBrush(); } );
             })
             .text(function() { return zoomBrushMode ? "brush" : "zoom"; } );
-
+        var bbox = zoomBrushText.node().getBBox();
+        var padding = 4;
+        zoomBrushButton.insert("rect","text")
+            .attr("x", bbox.x - padding)
+            .attr("y", bbox.y - padding)
+            .attr("width", bbox.width + (padding*2))
+            .attr("height", bbox.height + (padding*2))
+            .style("fill", "#ccc");
+        
         return svg;
     }
     
@@ -327,12 +328,12 @@ nbadvPlotter = (function(){
 
         for (var i in data[0].minutes) {
             var d = data[0].minutes[i];
-            console.log("d = " + JSON.stringify(d));
+            //console.log("d = " + JSON.stringify(d));
             var a = {};
             a.x_axis = d.minute;
             var beginMin = $('#timeSlidertextmin').html();
             var endMin   = $('#timeSlidertextmax').html();
-            console.log("em = " + beginMin + '/' + endMin + "  " + a.x_axis);
+            //console.log("em = " + beginMin + '/' + endMin + "  " + a.x_axis);
             if (beginMin <= a.x_axis && a.x_axis <= endMin) {
                 area_data.push(a);
             }
@@ -341,11 +342,14 @@ nbadvPlotter = (function(){
 
         var area = d3.svg.area()
             .interpolate("basis")
-            .x(function(d) { console.log("d = " + JSON.stringify(d)); return Math.ceil(x(d.x_axis)); })
+            .x(function(d) { 
+                //console.log("d = " + JSON.stringify(d)); 
+                return Math.ceil(x(d.x_axis)); 
+            })
             .y0(height)
             .y1(function(d) { 
                 var v = y(y.domain()[y.domain().length-1]);
-                console.log("YR = " + v); 
+                //console.log("YR = " + v); 
                 return v; 
             });
         
@@ -410,8 +414,8 @@ nbadvPlotter = (function(){
         var container = d3.select("#plots")
             .style("background", "#fff")
             .style("border-style", "solid")
-            .style("border-thickness", "1px")
-            .style("border-color", "#ddd")
+            .style("border-width", "1px")
+            .style("border-color", "#ccc")
             .style("border-radius", "3px")
             .style("margin", "15px")
             .style("display", "inline-block")

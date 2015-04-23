@@ -31,15 +31,26 @@
 <body>
 
 <div id="logo">
-  <span>
-    <img id="logo-img" src="style/img/ballers-logo.png" alt="logo">
-  </span>
 </div>
 
 
 <div id="title-bar">
+<div id="title-bar-content">
+  
+  <span>
+    <img id="logo-img" src="style/img/ballers-logo.png" alt="logo">
+  </span>
 
   <form id="options-form" action="#">
+    
+    <span class="timeSliderContainer">
+      <span id="timeSliderLabel">
+        <span>Range:</span> 
+        <span id="timeSlidertextmin">0</span>-<span id="timeSlidertextmax">48</span>
+      </span>
+      <div id="timeSlider"></div>
+    </span>
+    
     <fieldset class="disp-inline">
       
       <span class="dropdown">
@@ -71,8 +82,10 @@
       </div>
 
     </fieldset>
+  
   </form>
-
+  
+</div>
 </div>
 
 <div id="about-dialog" title="Basic dialog" style="display:none">
@@ -97,12 +110,6 @@
 
 
 <div class="demo">
-  
-  <div>Range Slider with event, values: 
-    <span id="timeSlidertextmin">0</span>, 
-    <span id="timeSlidertextmax">48</span>
-  </div>
-  <div id="timeSlider"></div>
  
   <br/>
  

@@ -3,8 +3,12 @@
 }
 
 #logo-img {
-    width: 170px;
-    height: 100px;
+    width: 100px;
+    height: 56px;
+    display:inline-block;
+    vertical-align:middle;
+    line-height:50px;
+    margin-right:20px;
 }
 
 #logo {
@@ -16,18 +20,32 @@
     top:0px;
 }
 
+.d3-slider-axis {
+    fill: white;
+}
+
 .d3-slider-range {
-    fill:#fd6500;
-    color:#fd6500;
-    background-color:#fd6500;
+    color: white;
+    background:#fd6500 !important;
+}
+#timeSliderLabel {
+    margin-right:15px;
+    color: white;
+}
+
+.timeSliderContainer {
+    font: 16px sans-serif;
 }
 
 #timeSlider {
+    font: 16px sans-serif;
+    font-color: white;
+    vertical-align:middle;
+    line-height:40px;
     width: 400px;
-    margin: 10px;
-    display: inline-block;
-    /*fill:#fd6500;
-    color:#fd6500;*/
+    display:inline-block;
+    font-size:16px;;
+    margin-right:20px;
 }
 
 .multi-line:hover {
@@ -39,21 +57,22 @@
 }
 
 #options-form {
-  display:inline;
+  display:inline-block;
   margin-top:0px;
   margin-top:0px;
-  margin-left:auto;
-  margin-right:auto;
-  vertical-align:middle
+  right:0px;
+  line-height:40px;
+}
+
+#title-bar-content {
 }
 
 #title-bar {
-  background-color: #4C1A1A;
   background-color: #444;
   margin-top: 0px;
   margin-bottom: 10px;
   padding-top: 0px;
-  height:50px;
+  height:60px;
   width 100%;
   text-align:center;
 }

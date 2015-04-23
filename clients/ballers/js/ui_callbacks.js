@@ -33,7 +33,7 @@ var updateVectorGraph  = function() {
     d3.json(url, function(error, data) {
         var container = nbadvPlotter.getPlotContainer();
         container.html("");
-        nbadvPlotter.appendVectorGraph(container, data, "dim", 650, 750);
+        nbadvPlotter.appendVectorGraph(container, data, 650, 750);
     })
     .header("Content-Type","application/json");
 }
@@ -51,15 +51,14 @@ var updateSecondaryGraph = function(id, dimension, filters2, players) {
         console.log(data);
         d3.select(id).html("");
         var outerContainer = d3.select(id)
-        /*
             .style("border-style", "solid")
-            .style("border-thickness", "1px")
-            .style("border-color", "#DCB8B8")
-        */
+            .style("border-width", "1px")
+            .style("border-color", "#ccc")
+            .style("border-radius", "3px")
             .style("background", "#fff");
         outerContainer.append("div").html(dimension);
         var container = outerContainer.append("div");
-        nbadvPlotter.appendSVGMultiLinePlot(container, data, dimension, 410, 232);
+        nbadvPlotter.appendSVGMultiLinePlot(container, data, dimension, 370, 232);
     })
     .header("Content-Type","application/json");
 }

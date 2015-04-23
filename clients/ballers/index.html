@@ -189,8 +189,7 @@ d3.select('#timeSlider').call(
             d3.select('#timeSlidertextmin').text(value[ 0 ]);
             d3.select('#timeSlidertextmax').text(value[ 1 ]); })
         .on("slideend", function(evt, value) {
-            console.log("updating graph");
-            updateVectorGraph();     
+            console.log("drag end");
           })
 );
 

@@ -53,7 +53,7 @@ var updateSecondaryGraph = function(id, dimension, filters2, players) {
         var outerContainer = d3.select(id)
             .style("border-style", "solid")
             .style("border-thickness", "1px")
-            .style("border-color", "rgba(210,210,210,1.0)")
+            .style("border-color", "#DCB8B8")
             .style("background", "#fff");
         outerContainer.append("div").html(dimension);
         var container = outerContainer.append("div");
@@ -71,5 +71,13 @@ $(function() {
         .click(function( event ) {
             event.preventDefault(); // stop page redirection
             updateVectorGraph();
+        });
+    
+    $( "#about" )
+        .button()
+        .click(function( event ) {
+            $(function() {
+                $( "#about-dialog" ).dialog();
+            });
         });
 });

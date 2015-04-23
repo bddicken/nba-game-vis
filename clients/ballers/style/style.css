@@ -16,10 +16,18 @@
     top:0px;
 }
 
+.d3-slider-range {
+    fill:#fd6500;
+    color:#fd6500;
+    background-color:#fd6500;
+}
+
 #timeSlider {
     width: 400px;
     margin: 10px;
     display: inline-block;
+    /*fill:#fd6500;
+    color:#fd6500;*/
 }
 
 .multi-line:hover {
@@ -40,7 +48,7 @@
 }
 
 #title-bar {
-  background-color: steelblue;
+  background-color: #4C1A1A;
   margin-top: 0px;
   margin-bottom: 10px;
   padding-top: 0px;

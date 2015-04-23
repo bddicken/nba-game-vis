@@ -3,7 +3,7 @@ nbadvPlotter = (function(){
 
     var nbadvPlotter = {}
 
-    nbadvPlotter.color = d3.scale.category20();
+    nbadvPlotter.color = d3.scale.category10();
 
     nbadvPlotter.plotX = function(selection, width, height, xAxis) {
         return selection.append("g")
@@ -45,13 +45,13 @@ nbadvPlotter = (function(){
     
     nbadvPlotter.appendVectorGraph = function(
             containerSelection, data, dimension, totalWidth, totalHeight) {
-        var opt = {epsilon: 15, perplexity: 6};
+        var opt = {epsilon: 20, perplexity: 6};
         var T = new tsnejs.tSNE(opt); // create a tSNE instance
         var Y;
         var stepNum = 0;
         var tx=0, ty=0;
         var ss=1;
-        var stepMax = 400;
+        var stepMax = 300;
         
         var margin = {top: 10, right: 10, bottom: 10, left: 10};
         var width = totalWidth 
@@ -67,6 +67,7 @@ nbadvPlotter = (function(){
         var brushCell;
 
         var brushstart = function(p) {
+            nbadvPlotter.color = d3.scale.category10();
             if (brushCell !== this) {
                 d3.select(brushCell).call(brush.clear());
                 //x.domain([200,width]);
@@ -75,7 +76,7 @@ nbadvPlotter = (function(){
             }
         }
 
-        var players = [];
+        var players = ['Nash', 'Paul', 'Kidd'];
 
         var brushmove = function(p) {
             var e = brush.extent();
@@ -89,7 +90,12 @@ nbadvPlotter = (function(){
                 var yp = ((Y[i][1]*20*ss + ty) + 400) * (-1) + height;
                 var value = b00 > xp || xp > b10
                     || b01 > yp || yp > b11;
-                if (!value) { players.push(d); };
+                if (!value) { 
+                    d3.select(this).attr("fill", function(d) { return nbadvPlotter.color(d); });
+                    players.push(d); 
+                } else {
+                    d3.select(this).attr("fill", "SteelBlue" );
+                };
                 return value;
             });
         }
@@ -172,7 +178,8 @@ nbadvPlotter = (function(){
             .attr("class", "u");
 
         g.append("circle")
-            .attr("fill", function(d) { return nbadvPlotter.color(d); })
+            //.attr("fill", function(d) { return nbadvPlotter.color(d); })
+            .attr("fill", "SteelBlue" )
             .attr("r", "6px");
         g.append("text")
             .attr("text-anchor", "top")
@@ -324,6 +331,15 @@ nbadvPlotter = (function(){
                 console.log("YR = " + v); 
                 return v; 
             });
+        
+        svg.append("path")
+            .datum(area_data)
+            .attr("class", "area")
+            .attr("opacity", ".05")
+            .attr("fill", "#000")
+            .attr("stroke", "blue")
+            .attr("d", area);
+            
 
         svg.call(nbadvPlotter.makeQuarterLines, 
                 width, height,
@@ -354,14 +370,6 @@ nbadvPlotter = (function(){
                     .attr("opacity", "0.0")
             });
         
-        svg.append("path")
-            .datum(area_data)
-            .attr("class", "area")
-            .attr("opacity", ".075")
-            .attr("fill", "#000")
-            .attr("stroke", "blue")
-            .attr("d", area);
-            
         return svg;
     }
     
@@ -386,7 +394,7 @@ nbadvPlotter = (function(){
             .style("background", "#fff")
             .style("border-style", "solid")
             .style("border-thickness", "1px")
-            .style("border-color", "rgba(210,210,210,1.0)")
+            .style("border-color", "#DCB8B8")
             .style("margin", "15px")
             .style("display", "inline-block")
             .style("margin", "auto")

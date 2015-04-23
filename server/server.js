@@ -304,18 +304,15 @@ var combineSummaries = function(s1, s2) {
     summary.player = s1.player;
     summary.team = s1.team;
     summary.season = s1.season;
-    
-    summary.minutes = JSON.parse(JSON.stringify(s1.minutes));
-    //console.log(JSON.stringify(s1.minutes));
+   
+    summary.minutes = s1.minutes;
 
-    var s2mins = JSON.parse(JSON.stringify(s2.minutes));
-    //console.log("\ns2m=" + JSON.stringify(s2mins));
+    var s2mins = s2.minutes;
 
     for (var i in s2mins) {
         var minute = s2mins[i];
         for (var j in minute) {
             var datum = minute[j];
-            //console.log("i,j = " + i + "," + j);
             if (j == 'minute') {
                 summary.minutes[i][j] = datum;
             } else {
@@ -332,7 +329,7 @@ var groupSummariesByKey = function(summaries, key) {
     groupedSummariesArr = []
 
     for (var i in summaries) {
-        var summary = summaries[i];
+        var summary = summaries[i].toObject();
         var groupKey = summary[key];
         if (groupedSummaries[groupKey] == undefined) {
             groupedSummaries[groupKey] = summary;
@@ -512,26 +509,36 @@ router.route('/tsne/playerSimilarity/:begin_min/:end_min/:filters')
 
     console.log("min range = " + beginMin + ", " + endMin);
     console.log("filters = " + JSON.stringify(filters));
+    
+    console.log("A");
 
     summariesAll.exec(function (err, summariesAll) {
         if (err) { res.send(err); }
+        console.log("B");
                 
         var summariesAllGrouped = groupSummariesByKey(summariesAll, "player");
-
-        //matchPlayerNames = [
-        //        'Dragic', 'Nash', 'James', 
-        //        'Durant', 'Crawford', 'Howard', 
-        //        'Parker', 'Thabeet', 'Samuels',
-        //        'Ibaka', 'Love', 'A. Miller'];
-
+        
+        console.log("B1");
+       
+        ///*
+        matchPlayerNames = [
+                'Dragic', 'Nash', 'James', 
+                'Durant', 'Crawford', 'Howard', 
+                'Parker', 'Thabeet', 'Samuels',
+                'Ibaka', 'Love', 'A. Miller',
+                'Bayless', 'Marion'];
+        //*/
+        /*
         matchPlayerNames = [
                 'Dragic', 'Nash', 'James', 
                 'Crawford', 'Howard', 
-                'Samuels',
-                'Love', 'A. Miller'];
-        
+                'Samuels', 'Love', 'A. Miller'];
+        */
+
         matchSummaries = getSummariesMatchingNames(summariesAllGrouped, matchPlayerNames);
         //matchSummaries = summariesAllGrouped;
+        
+        console.log("C");
         
         //console.log("\n\nSA size = "+ summariesAll.length)
         //console.log("\n\nSAG size = "+ summariesAllGrouped.length)
@@ -553,9 +560,12 @@ router.route('/tsne/playerSimilarity/:begin_min/:end_min/:filters')
                 vector.push(compareSummariesDiff(s1, s2, 'Shot', beginMin, endMin));
                 vector.push(compareSummariesDiff(s1, s2, 'Reb', beginMin, endMin));
                 vector.push(compareSummariesDiff(s1, s2, 'TO', beginMin, endMin));
+                vector.push(compareSummariesDiff(s1, s2, 'FT', beginMin, endMin));
+                vector.push(compareSummariesDiff(s1, s2, 'Foul', beginMin, endMin));
             }
             result['vecs'].push(vector);
         }
+        console.log("D");
 
         res.json(result);
     });

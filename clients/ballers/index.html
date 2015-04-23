@@ -59,9 +59,32 @@
       <div class="dropdown">
       <button id="vecGraph" value="update g">update vg</button>
       </div>
+      
+      <div class="dropdown">
+      <button id="about" value="about">about</button>
+      </div>
 
     </fieldset>
   </form>
+
+</div>
+
+<div id="about-dialog" title="Basic dialog" style="display:none">
+  
+  <p>
+  The layout of all the players on the plane is done using the t-SNE algorithm.
+  </p>
+  
+  <p>
+  The similarity of two players (how close they appear on the plane) is determined
+  by how similar their performance curves are for each stat.
+  </p>
+  
+  <p>
+  You can toggle zomming/brushing with the button or the 't' key.
+  When you brush over players, those players' stat curves will show up in the plots
+  on the right-hand side.
+  </p>
 
 </div>
 
@@ -151,10 +174,10 @@ d3.select('#timeSlider').call(
             console.log(value[ 0 ] + ". " + value[ 1 ]);
             d3.select('#timeSlidertextmin').text(value[ 0 ]);
             d3.select('#timeSlidertextmax').text(value[ 1 ]); })
-        /*.on("mouseout", function(evt, value) {
-            console.log("mouseout");
+        .on("slideend", function(evt, value) {
+            console.log("updating graph");
             updateVectorGraph();     
-          })*/
+          })
 );
 
 </script>

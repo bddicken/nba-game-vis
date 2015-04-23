@@ -49,6 +49,7 @@
 
 #title-bar {
   background-color: #4C1A1A;
+  background-color: #444;
   margin-top: 0px;
   margin-bottom: 10px;
   padding-top: 0px;
@@ -134,7 +135,7 @@ select {
 body {
   font: 10px sans-serif;
   font-family: 'Varela Round', 'Indie Flower', cursive;
-  background-color:#eee;
+  background-color:#f5f5f5;
   background-repeat: repeat-y;
   margin-top:0px;
   margin-left:0px;

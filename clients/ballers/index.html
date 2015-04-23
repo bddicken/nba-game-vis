@@ -57,6 +57,12 @@
       </span>
       
       <div class="dropdown">
+      <select name="eventType" id="eventType">
+        <option value="Shot" disabled selected>Event Type</option>
+      </select>
+      </div>
+      
+      <div class="dropdown">
       <button id="vecGraph" value="update g">update vg</button>
       </div>
       
@@ -81,7 +87,6 @@
   </p>
   
   <p>
-  You can toggle zomming/brushing with the button or the 't' key.
   When you brush over players, those players' stat curves will show up in the plots
   on the right-hand side.
   </p>
@@ -162,6 +167,7 @@ var setupDropdown = function (url, id, valueGetter, textGetter) {
 
 setupDropdown(nbadvURLs.teamsURL, '#team', function(d){return d['name'];}, function(d){return d['name'];})
 setupDropdown(nbadvURLs.seasonsURL, '#season', function(d){return d['name'];}, function(d){return d['name'];})
+setupDropdown(nbadvURLs.eventTypesURL, '#eventType', function(d){return d;}, function(d){return d;})
 
 d3.select('#timeSlider').call(
     d3.slider()

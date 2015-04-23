@@ -195,31 +195,48 @@ nbadvPlotter = (function(){
         
         zoomListener(svg);
 
-        var zoomMode = true;
-
-        // Toggle zooming and brushing with "t"
-        document.onkeypress = function (e) {
-            e = e || window.event;
-            console.log(e.keyCode);
-            if (e.keyCode == 116) {
-                if (zoomMode) {
-                  tzl = d3.behavior.zoom()
-                      .scaleExtent([0.1, 10])
-                      .center([0,0])
-                      .on("zoom", undefined);
-                  tzl(svg);
-                  containerGroup
-                    .append("g")
-                    .attr("class", "brush")
-                    .call(brush);
-                }
-                else {
-                    containerGroup.select(".brush").remove();
-                    zoomListener(svg);
-                }
-                zoomMode = !zoomMode;
+        var toggleZoomBrush = function() {
+            if (zoomBrushMode) {
+              tzl = d3.behavior.zoom()
+                  .scaleExtent([0.1, 10])
+                  .center([0,0])
+                  .on("zoom", undefined);
+              tzl(svg);
+              containerGroup
+                .append("g")
+                .attr("class", "brush")
+                .call(brush);
             }
-        };
+            else {
+                containerGroup.select(".brush").remove();
+                zoomListener(svg);
+            }
+            zoomBrushMode = !zoomBrushMode;
+            return zoomBrushMode;
+
+        }
+
+        var zoomBrushMode = true;
+        
+        svg.append("rect")
+            .attr("x", 5)
+            .attr("y", 5)
+            .attr("width", 55)
+            .attr("height", 25)
+            .attr("fill", "#bbb")
+
+        svg.append("text")
+            .attr("x", 15)
+            .attr("y", 20)
+            .attr("text-anchor", "top")
+            .attr("font-size", 14)
+            .style("cursor", "pointer")
+            .on("click", function(d) { 
+                toggleZoomBrush(); 
+                d3.select(this).text(function() { return zoomBrushMode ? "brush" : "zoom"; } );
+            })
+            .text(function() { return zoomBrushMode ? "brush" : "zoom"; } );
+
         return svg;
     }
     
@@ -394,7 +411,8 @@ nbadvPlotter = (function(){
             .style("background", "#fff")
             .style("border-style", "solid")
             .style("border-thickness", "1px")
-            .style("border-color", "#DCB8B8")
+            .style("border-color", "#ddd")
+            .style("border-radius", "3px")
             .style("margin", "15px")
             .style("display", "inline-block")
             .style("margin", "auto")

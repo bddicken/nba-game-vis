@@ -212,7 +212,7 @@ nbadvPlotter = (function(){
                 zoomListener(svg);
             }
             zoomBrushMode = !zoomBrushMode;
-            return zoomBrushMode ? "brush" : "zoom"; 
+            return zoomBrushMode ? "brush mode" : "zoom mode"; 
         }
 
         var zoomBrushMode = true;
@@ -228,7 +228,7 @@ nbadvPlotter = (function(){
             .on("click", function(d) { 
                 d3.select(this).text(function() { return toggleZoomBrush(); } );
             })
-            .text(function() { return zoomBrushMode ? "brush" : "zoom"; } );
+            .text(function() { return zoomBrushMode ? "brush mode" : "zoom mode"; } );
         var bbox = zoomBrushText.node().getBBox();
         var padding = 4;
         zoomBrushButton.insert("rect","text")

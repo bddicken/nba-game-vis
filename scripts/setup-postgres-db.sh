@@ -45,8 +45,11 @@ echo "${SCRIPT_DIR}/resources/load_data.sql"
 
 TEMP_LOAD_FILE=$(mktemp)
 cp "${LOAD_DATA_SQL_FILE}" ${TEMP_LOAD_FILE} 
+echo "Temporary load file = ${TEMP_LOAD_FILE}"
 
-PBP_FILE=$(realpath "${DATA_DIR}/pbp.txt")
+
+#PBP_FILE=$(realpath "${DATA_DIR}/pbp.txt")
+PBP_FILE=$(realpath "${DATA_DIR}/gameEvents.txt")
 PBP_FILE=$(echo "${PBP_FILE}" | sed -e 's/[\/&]/\\&/g')
 
 PLAYERS_FILE=$(realpath "${DATA_DIR}/players.txt")

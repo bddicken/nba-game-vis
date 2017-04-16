@@ -201,7 +201,7 @@ class NBADataProcessor:
             playerID = self.playerIDCounter
              
             if playerName not in self.players:
-                player = {'name': str(playerName), 'trueName': str(playerTrueName), 'id': str(playerID)}
+                player = {'name': str(playerName).replace(',',''), 'trueName': str(playerTrueName).replace(',',''), 'id': str(playerID)}
                 self.players[playerName] = player
                 self.playerIDCounter = self.playerIDCounter + 1
     

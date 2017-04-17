@@ -53,18 +53,21 @@ var getFirstKey = function (d) {
 
 var fileCount = 6;
 var checkFinished = function(rowCount, rowType) {
+    console.warn("CF-X " + fileCount + "  RT=" + rowType + "  RC=" + rowCount);
     if (rowCount == 0) {
+        console.warn("CF-A " + fileCount + "  RT=" + rowType);
         console.log("Done processing " + rowType + " elements.");
         fileCount--;
     }
     if (fileCount == 1) {
+        console.warn("CF-B " + fileCount + "  RT=" + rowType);
         buildSummaries();
     }
     if (fileCount == 0) {
+        console.warn("CF-C " + fileCount + "  RT=" + rowType);
         console.log("Done processing all Files. Exiting.");
         process.exit(code=0);
     }
-
 }
 
 ///
